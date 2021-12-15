@@ -76,6 +76,22 @@ int brute_force(int n, integer_t *p, int desired_sum)
 	return 0;
 }
 
+int brute_force_recursive(int n, integer_t p[n], int desired_sum, int current_index, integer_t partial_sum, int b[n])
+{
+	if (partial_sum == desired_sum)
+	{
+		return 1;
+	}
+	if(current_index < n){
+		current_index++;
+		b[current_index] = 0;
+		brute_force_recursive(n, p, desired_sum, current_index, partial_sum, b);
+		b[current_index] = 1;
+		brute_force_recursive(n, p, desired_sum, current_index, partial_sum + p[current_index], b);
+	}
+	return 0;
+}
+
 //
 // main program
 //
@@ -88,18 +104,33 @@ int main(void)
 	fprintf(stderr, "  n_sums ...... %d\n", n_sums);
 	fprintf(stderr, "  n_problems .. %d\n", n_problems);
 	fprintf(stderr, "  integer_t ... %d bits\n", 8 * (int)sizeof(integer_t));
-	//
-	// place your code here
-	//
 
-	int i = 0; // problema
-	int j = 0; // soma
-
-	for (i = 0; i < 1; i++)
+	// para cada problema
+	for (int i = 0; i < n_problems; i++)
 	{
-		for (j = 0; j < n_sums; j++)
+		// numero de valores a somar
+		int n = all_subset_sum_problems[i].n;
+		// ignorar problemas com numero de valores a somar superior
+		if (n > 10)
+			continue;
+		// os valores a somar
+		integer_t *p = all_subset_sum_problems[i].p;
+
+		// para cada soma
+		for (int j = 0; j < n_sums; j++)
 		{
-			brute_force(all_subset_sum_problems[i].n, all_subset_sum_problems[i].p, all_subset_sum_problems[i].sums[j]);
+			// soma desejada
+			integer_t desired_sum = all_subset_sum_problems[i].sums[j];
+			// resultados
+			int b[n];
+
+			//brute_force(all_subset_sum_problems[i].n, all_subset_sum_problems[i].p, all_subset_sum_problems[i].sums[j]);
+			brute_force_recursive(n, p, desired_sum, 0, 0, b);
+
+			// imprime o resultado
+			for (int i = 0; i < n; i++)
+				printf("%d", b[i]);
+			printf("\n");
 		}
 	}
 
