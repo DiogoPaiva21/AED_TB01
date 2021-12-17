@@ -19,7 +19,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../P02/elapsed_time.h"
+#include "elapsed_time.h"
 #include STUDENT_H_FILE
 
 //
@@ -105,26 +105,32 @@ int main(void)
 	fprintf(stderr, "  n_problems .. %d\n", n_problems);
 	fprintf(stderr, "  integer_t ... %d bits\n", 8 * (int)sizeof(integer_t));
 
-	// para cada problema
+	//
+    // para cada problema
+    //
 	for (int i = 0; i < n_problems; i++)
 	{
-		// numero de valores a somar
-		int n = all_subset_sum_problems[i].n;
-		// ignorar problemas com numero de valores a somar superior
-		if (n > 10)
-			continue;
-		// os valores a somar
-		integer_t *p = all_subset_sum_problems[i].p;
+		int n = all_subset_sum_problems[i].n;           // numero de valores a somar		
+		integer_t *p = all_subset_sum_problems[i].p;    // valores a somar
 
-		// para cada soma
+		if (n > 10) continue;   // ignorar problemas com numero de valores a somar superior
+
+		//
+        // para cada soma
+        //
 		for (int j = 0; j < n_sums; j++)
 		{
-			// soma desejada
-			integer_t desired_sum = all_subset_sum_problems[i].sums[j];
-			// resultados
-			int b[n];
+			integer_t desired_sum = all_subset_sum_problems[i].sums[j]; // soma desejada
+			int b[n];   // resultados
 
+            /* 
+             * brute force não recursiva
+             */
 			//brute_force(all_subset_sum_problems[i].n, all_subset_sum_problems[i].p, all_subset_sum_problems[i].sums[j]);
+
+            /* 
+             * brute force recursiva
+             */
 			brute_force_recursive(n, p, desired_sum, 0, 0, b);
 
 			// imprime o resultado
