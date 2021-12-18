@@ -90,20 +90,41 @@ int brute_force(int n, integer_t p[n], integer_t desired_sum, int b[n])
 	return 0;
 }
 
-int brute_force_recursive(int n, integer_t p[n], int desired_sum, int current_index, integer_t partial_sum, int b[n])
+/**
+ * @brief Determina a combinação dos valores de p cujo somatório é desired_sum, por um método brute force recursivo.
+ *
+ * @param n                 Tamanho de p
+ * @param p                 Conjunto com os valores a somar
+ * @param desired_sum       Soma desejada
+ * @param current_index     Índice atual em p
+ * @param partial_sum       Soma atual
+ * @param mask              Máscara atual
+ * @param b                 Array que guarda a solução
+ *
+ * @return                  1 se foi encontrada uma solução, 0 caso contrário
+ *
+ */
+int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int current_index, integer_t partial_sum, integer_t mask, int b[n])
 {
+    /* foi descoberta a soma */
 	if (partial_sum == desired_sum)
 	{
+        /* guardar a máscara no array b */
+        for (int i = 0; i < n; i++)
+            b[i] = ((mask & (1 << i)) == 0) ? 0 : 1;
 		return 1;
 	}
-	if(current_index < n){
-		current_index++;
-		b[current_index] = 0;
-		brute_force_recursive(n, p, desired_sum, current_index, partial_sum, b);
-		b[current_index] = 1;
-		brute_force_recursive(n, p, desired_sum, current_index, partial_sum + p[current_index], b);
+
+    /* valor de retorno é zero se ainda não tiver sido encontrada uma solução */
+    int ret = 0;
+    if (current_index < n)
+    {
+        /* p[current_index] não é usado na soma */
+        ret |= brute_force_recursive(n, p, desired_sum, current_index + 1, partial_sum, mask, b);
+        /* p[current_index] é usado na soma */
+        ret |= brute_force_recursive(n, p, desired_sum, current_index + 1, partial_sum + p[current_index], mask | (1 << current_index), b);
 	}
-	return 0;
+    return ret;
 }
 
 //
