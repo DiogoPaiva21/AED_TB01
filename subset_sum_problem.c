@@ -53,22 +53,36 @@
 // note, however, that you may get a faster function by reducing the number of function arguments (maybe a single pointer to a struct?)
 //
 
-int brute_force(int n, integer_t *p, int desired_sum)
+/**
+ * @brief Determina a combinação dos valores de p cujo somatório é desired_sum, por um método brute force não recursivo.
+ *
+ * @param n             Tamanho de p
+ * @param p             Conjunto com os valores a somar
+ * @param desired_sum   Soma desejada
+ * @param b             Array que guarda a solução
+ *
+ * @return              1 se foi encontrada uma solução, 0 caso contrário
+ */
+int brute_force(int n, integer_t p[n], integer_t desired_sum, int b[n])
 {
-	int max_comb = pow(2, n); // máximo de combinacoes
+    integer_t mask;     // máscara
+    integer_t test_sum; // soma de teste
 
-	for (int comb = 0; comb < max_comb; comb++)
+    /* para cada combinação */
+    for (mask = 0; mask < (1 << n); mask++)
 	{
-		integer_t test_sum = 0;
-		for (int bit = 0; bit < n; bit++)
-			if ((comb & (1 << bit)) != 0)
-				test_sum += p[bit];
+        /* determinar a soma dos valores de p */
+        test_sum = 0;
+        for (int i = 0; i < n; i++)
+            if ((mask & (1 << i)) != 0)
+                test_sum += p[i];
+
+        /* foi descoberta a soma */
 		if (test_sum == desired_sum)
 		{
-			printf("soma: %d - ", desired_sum);
-			for (int bit = 0; bit < n; bit++)
-				printf("%d", ((comb & (1 << bit)) == 0) ? 0 : 1);
-			printf("\n");
+            /* guardar a máscara no array b */
+            for (int i = 0; i < n; i++)
+                b[i] = ((mask & (1 << i)) == 0) ? 0 : 1;
 			return 1;
 		}
 	}
