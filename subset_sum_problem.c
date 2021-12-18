@@ -70,7 +70,7 @@ int brute_force(int n, integer_t p[n], integer_t desired_sum, int b[n])
 
     /* para cada combinação */
     for (mask = 0; mask < (1 << n); mask++)
-	{
+    {
         /* determinar a soma dos valores de p */
         test_sum = 0;
         for (int i = 0; i < n; i++)
@@ -78,16 +78,16 @@ int brute_force(int n, integer_t p[n], integer_t desired_sum, int b[n])
                 test_sum += p[i];
 
         /* foi descoberta a soma */
-		if (test_sum == desired_sum)
-		{
+        if (test_sum == desired_sum)
+        {
             /* guardar a máscara no array b */
             for (int i = 0; i < n; i++)
                 b[i] = ((mask & (1 << i)) == 0) ? 0 : 1;
-			return 1;
-		}
-	}
+            return 1;
+        }
+    }
 
-	return 0;
+    return 0;
 }
 
 /**
@@ -107,13 +107,13 @@ int brute_force(int n, integer_t p[n], integer_t desired_sum, int b[n])
 int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int current_index, integer_t partial_sum, integer_t mask, int b[n])
 {
     /* foi descoberta a soma */
-	if (partial_sum == desired_sum)
-	{
+    if (partial_sum == desired_sum)
+    {
         /* guardar a máscara no array b */
         for (int i = 0; i < n; i++)
             b[i] = ((mask & (1 << i)) == 0) ? 0 : 1;
-		return 1;
-	}
+        return 1;
+    }
 
     /* valor de retorno é zero se ainda não tiver sido encontrada uma solução */
     int ret = 0;
@@ -123,57 +123,62 @@ int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int curr
         ret |= brute_force_recursive(n, p, desired_sum, current_index + 1, partial_sum, mask, b);
         /* p[current_index] é usado na soma */
         ret |= brute_force_recursive(n, p, desired_sum, current_index + 1, partial_sum + p[current_index], mask | (1 << current_index), b);
-	}
+    }
     return ret;
 }
 
-//
-// main program
-//
-
+/* Main program */
 int main(void)
 {
-	fprintf(stderr, "Program configuration:\n");
-	fprintf(stderr, "  min_n ....... %d\n", min_n);
-	fprintf(stderr, "  max_n ....... %d\n", max_n);
-	fprintf(stderr, "  n_sums ...... %d\n", n_sums);
-	fprintf(stderr, "  n_problems .. %d\n", n_problems);
-	fprintf(stderr, "  integer_t ... %d bits\n", 8 * (int)sizeof(integer_t));
+    fprintf(stderr, "Program configuration:\n");
+    fprintf(stderr, "  min_n ....... %d\n", min_n);
+    fprintf(stderr, "  max_n ....... %d\n", max_n);
+    fprintf(stderr, "  n_sums ...... %d\n", n_sums);
+    fprintf(stderr, "  n_problems .. %d\n", n_problems);
+    fprintf(stderr, "  integer_t ... %d bits\n", 8 * (int)sizeof(integer_t));
 
-	//
-    // para cada problema
-    //
-	for (int i = 0; i < n_problems; i++)
-	{
-		int n = all_subset_sum_problems[i].n;           // numero de valores a somar		
-		integer_t *p = all_subset_sum_problems[i].p;    // valores a somar
+    int ret; // valor de retorno das funções
 
-		if (n > 10) continue;   // ignorar problemas com numero de valores a somar superior
+    /* para cada problema */
+    for (int i = 0; i < n_problems; i++)
+    {
+        int n = all_subset_sum_problems[i].n;        // número de valores a somar
+        integer_t *p = all_subset_sum_problems[i].p; // conjunto com os valores a somar
+        int b[n];                                    // solução
 
-		//
-        // para cada soma
-        //
-		for (int j = 0; j < n_sums; j++)
-		{
-			integer_t desired_sum = all_subset_sum_problems[i].sums[j]; // soma desejada
-			int b[n];   // resultados
+        /* ignorar problemas com n superior */
+        if (n > 10)
+            continue;
 
-            /* 
+        /* para cada soma */
+        for (int j = 0; j < n_sums; j++)
+        {
+            integer_t desired_sum = all_subset_sum_problems[i].sums[j]; // soma desejada
+
+            /*
              * brute force não recursiva
              */
-			//brute_force(all_subset_sum_problems[i].n, all_subset_sum_problems[i].p, all_subset_sum_problems[i].sums[j]);
+            //ret = brute_force(n, p, desired_sum, b);
 
-            /* 
+            /*
              * brute force recursiva
              */
-			brute_force_recursive(n, p, desired_sum, 0, 0, b);
+            ret = brute_force_recursive(n, p, desired_sum, 0, 0, 0, b);
+            
+            /* foi encontrada uma solução */
+            if (ret == 1)
+            {
+                /* imprime o resultado */
+                for (int i = 0; i < n; i++)
+                    printf("%d", b[i]);
+            }
+            else
+            {
+                printf("Não foi encontrada uma solução!");
+            }
+            printf("\n");
+        }
+    }
 
-			// imprime o resultado
-			for (int i = 0; i < n; i++)
-				printf("%d", b[i]);
-			printf("\n");
-		}
-	}
-
-	return 0;
+    return 0;
 }
