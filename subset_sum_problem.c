@@ -127,6 +127,43 @@ int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int curr
     return ret;
 }
 
+/**
+ * @brief Determina a combinação dos valores de p cujo somatório é desired_sum, por um método brute force recursivo inteligente,
+ * que evita recursões extra quando a soma parcial já é superior à soma desejada.
+ *
+ * @param n                 Tamanho de p
+ * @param p                 Conjunto com os valores a somar
+ * @param desired_sum       Soma desejada
+ * @param current_index     Índice atual em p
+ * @param partial_sum       Soma atual
+ * @param mask              Máscara atual
+ * @param b                 Array que guarda a solução
+ *
+ * @return                  1 se foi encontrada uma solução, 0 caso contrário
+ *
+ */
+int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current_index, integer_t partial_sum, integer_t mask, int b[n])
+{
+    /* foi descoberta a soma */
+    if (partial_sum == desired_sum)
+    {
+        /* guardar a máscara no array b */
+        for (int i = 0; i < n; i++)
+            b[i] = ((mask & (1 << i)) == 0) ? 0 : 1;
+        return 1;
+    }
+
+    /* valor de retorno é zero se ainda não tiver sido encontrada uma solução */
+    int ret = 0;
+    if (current_index < n && partial_sum < desired_sum)
+    {
+        /* p[current_index] não é usado na soma */
+        ret |= brute_force_clever(n, p, desired_sum, current_index + 1, partial_sum, mask, b);
+        /* p[current_index] é usado na soma */
+        ret |= brute_force_clever(n, p, desired_sum, current_index + 1, partial_sum + p[current_index], mask | (1 << current_index), b);
+    }
+    return ret;
+}
 
 /* 
  * 1 - imprime os resultados, uma solução por linha
@@ -140,7 +177,7 @@ int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int curr
  * Determinar até ao problema com N_LIMIT valores a somar
  */
 #ifndef N_LIMIT
-#define N_LIMIT 20
+#define N_LIMIT 30
 #endif
 
 /* 
@@ -151,7 +188,7 @@ int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int curr
  * 4 - schroeppel and shamir
  */
 #ifndef FUNC
-#define FUNC 1
+#define FUNC 3
 #endif
 
 /* Main program */
@@ -202,7 +239,7 @@ int main(void)
 #elif FUNC == 1
             ret = brute_force_recursive(n, p, desired_sum, 0, 0, 0, b);
 #elif FUNC == 2
-            ret = brute_force_clever();
+            ret = brute_force_clever(n, p, desired_sum, 0, 0, 0, b);
 #elif FUNC == 3
             ret = horowitz_and_sahni();
 #elif FUNC == 4
