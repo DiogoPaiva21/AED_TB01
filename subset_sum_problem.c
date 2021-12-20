@@ -127,6 +127,33 @@ int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int curr
     return ret;
 }
 
+
+/* 
+ * 1 - imprime os resultados, uma solução por linha
+ * 0 - imprime os tempos de cada problema n, todos na mesma linha
+ */
+#ifndef DEBUG
+#define DEBUG 1
+#endif
+
+/* 
+ * Determinar até ao problema com N_LIMIT valores a somar
+ */
+#ifndef N_LIMIT
+#define N_LIMIT 20
+#endif
+
+/* 
+ * 0 - brute force não recursiva
+ * 1 - brute force recursiva
+ * 2 - brute force clever
+ * 3 - horowitz and sahni
+ * 4 - schroeppel and shamir
+ */
+#ifndef FUNC
+#define FUNC 1
+#endif
+
 /* Main program */
 int main(void)
 {
@@ -137,9 +164,11 @@ int main(void)
     fprintf(stderr, "  n_problems .. %d\n", n_problems);
     fprintf(stderr, "  integer_t ... %d bits\n", 8 * (int)sizeof(integer_t));
 
-    int ret; // valor de retorno das funções
+    int ret;        // valor de retorno das funções
 
-    /* para cada problema */
+    /* 
+     * para cada problema
+     */
     for (int i = 0; i < n_problems; i++)
     {
         int n = all_subset_sum_problems[i].n;        // número de valores a somar
@@ -147,37 +176,73 @@ int main(void)
         int b[n];                                    // solução
 
         /* ignorar problemas com n superior */
-        if (n > 10)
+        if (n > N_LIMIT)
             continue;
 
-        /* para cada soma */
+        /* imprime o n do problema atual */
+        if (DEBUG) printf("n=%d\n", n);
+
+        /* 
+         * para cada soma
+         */
         for (int j = 0; j < n_sums; j++)
         {
             integer_t desired_sum = all_subset_sum_problems[i].sums[j]; // soma desejada
-
-            /*
-             * brute force não recursiva
-             */
-            //ret = brute_force(n, p, desired_sum, b);
-
-            /*
-             * brute force recursiva
-             */
-            ret = brute_force_recursive(n, p, desired_sum, 0, 0, 0, b);
             
-            /* foi encontrada uma solução */
+#if !DEBUG
+            /* instante inicial */  
+            double t1 = cpu_time();
+#endif
+
+            /* 
+             * execução da função
+             */
+#if   FUNC == 0
+            ret = brute_force(n, p, desired_sum, b);
+#elif FUNC == 1
+            ret = brute_force_recursive(n, p, desired_sum, 0, 0, 0, b);
+#elif FUNC == 2
+            ret = brute_force_clever();
+#elif FUNC == 3
+            ret = horowitz_and_sahni();
+#elif FUNC == 4
+            ret = schroeppel_and_shamir();
+#endif
+
+#if !DEBUG
+            /* instante final */  
+            double t2 = cpu_time();
+#endif
+
+            /* 
+             * impressão de resultados / tempos
+             */
+#if DEBUG     
             if (ret == 1)
             {
                 /* imprime o resultado */
                 for (int i = 0; i < n; i++)
                     printf("%d", b[i]);
+                printf("\n");
             }
             else
             {
-                printf("Não foi encontrada uma solução!");
+                printf("Não foi encontrada uma solução!\n");
             }
-            printf("\n");
+#else       
+            if (ret == 1) {  
+                /* imprime os tempos */
+                printf("%f\t", t2 - t1);
+            }
+            else
+            {
+                printf("NaN\t");
+            }
+#endif     
         }
+
+        /* mudança de linha, para os tempos do problema seguinte */  
+        if (!DEBUG) printf("\n");
     }
 
     return 0;
