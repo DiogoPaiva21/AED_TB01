@@ -53,6 +53,45 @@
 // note, however, that you may get a faster function by reducing the number of function arguments (maybe a single pointer to a struct?)
 //
 
+/* ------------------------------------------- Macros ------------------------------------------- */
+
+/*
+ * 1 - imprime na consola o valor de retorno, o tempo de execução e o resultado de cada soma
+ * 0 - imprime na consola os tempos de execução das somas de um problema n, na mesma linha e separados por '\t'
+ */
+#ifndef DEBUG
+#define DEBUG 1
+#endif
+
+/*
+ * Determinar até ao problema com N_LIMIT valores a somar
+ */
+#ifndef N_LIMIT
+#define N_LIMIT 25
+#endif
+
+/*
+ * 0 - brute force não recursiva
+ * 1 - brute force recursiva
+ * 2 - brute force clever
+ * 3 - horowitz and sahni
+ * 4 - schroeppel and shamir
+ */
+#ifndef FUNC
+#define FUNC 1
+#endif
+
+/* ------------------------------------ Estruturas de Dados ------------------------------------- */
+
+typedef struct
+{
+    integer_t sum;
+    unsigned long mask;
+} 
+horowitz_and_sahni_data_t;
+
+/* ------------------------------------------ Funções ------------------------------------------- */
+
 /**
  * @brief Determina a combinação dos valores de p cujo somatório é desired_sum, por um método brute force não recursivo.
  *
@@ -104,7 +143,7 @@ int brute_force(int n, integer_t p[n], integer_t desired_sum, int b[n])
  * @return                  1 se foi encontrada uma solução, 0 caso contrário
  *
  */
-int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int current_index, integer_t partial_sum, integer_t mask, int b[n])
+int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int current_index, integer_t partial_sum, unsigned long mask, int b[n])
 {
     /* foi descoberta a soma */
     if (partial_sum == desired_sum)
@@ -142,7 +181,7 @@ int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int curr
  * @return                  1 se foi encontrada uma solução, 0 caso contrário
  *
  */
-int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current_index, integer_t partial_sum, integer_t mask, int b[n])
+int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current_index, integer_t partial_sum, unsigned long mask, int b[n])
 {
     /* foi descoberta a soma */
     if (partial_sum == desired_sum)
@@ -165,33 +204,25 @@ int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current
     return ret;
 }
 
-/* 
- * 1 - imprime na consola o valor de retorno, o tempo de execução e o resultado de cada soma
- * 0 - imprime na consola os tempos de execução das somas de um problema n, na mesma linha e separados por '\t'
+/**
+ * @brief Determina a combinação dos valores de p cujo somatório é desired_sum, pelo método de Horowitz e Sahni.
+ *
+ * @param n                 Tamanho de p
+ * @param p                 Conjunto com os valores a somar
+ * @param desired_sum       Soma desejada
+ * @param b                 Array que guarda a solução
+ *
+ * @return                  1 se foi encontrada uma solução, 0 caso contrário
+ *
  */
-#ifndef DEBUG
-#define DEBUG 0
-#endif
+int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int b[n])
+{
+    
+    return 0;
+}
 
-/* 
- * Determinar até ao problema com N_LIMIT valores a somar
- */
-#ifndef N_LIMIT
-#define N_LIMIT 25
-#endif
+/* ------------------------------------- Programa Principal ------------------------------------- */
 
-/* 
- * 0 - brute force não recursiva
- * 1 - brute force recursiva
- * 2 - brute force clever
- * 3 - horowitz and sahni
- * 4 - schroeppel and shamir
- */
-#ifndef FUNC
-#define FUNC 2
-#endif
-
-/* Main program */
 int main(void)
 {
     fprintf(stderr, "Program configuration:\n");
@@ -201,8 +232,8 @@ int main(void)
     fprintf(stderr, "  n_problems .. %d\n", n_problems);
     fprintf(stderr, "  integer_t ... %d bits\n", 8 * (int)sizeof(integer_t));
 
-    int ret;        // valor de retorno das funções
-    double t1, t2;  // instantes inicial e final
+    int ret;       // valor de retorno das funções
+    double t1, t2; // instantes inicial e final
 
 #if !DEBUG
     /* cabeçalho da tabela */
@@ -212,7 +243,7 @@ int main(void)
     printf("\n");
 #endif
 
-    /* 
+    /*
      * para cada problema
      */
     for (int i = 0; i < n_problems; i++)
@@ -225,29 +256,29 @@ int main(void)
         if (n > N_LIMIT)
             continue;
 
-        /* 
-         * impressão na consola do n do problema atual
-         */
+            /*
+             * impressão na consola do n do problema atual
+             */
 #if DEBUG
         printf("n=%d\n", n);
 #else
         printf("%d\t", n);
 #endif
 
-        /* 
+        /*
          * para cada soma
          */
         for (int j = 0; j < n_sums; j++)
         {
             integer_t desired_sum = all_subset_sum_problems[i].sums[j]; // soma desejada
-            
-            /* instante inicial */  
+
+            /* instante inicial */
             t1 = cpu_time();
 
-            /* 
+            /*
              * execução da função
              */
-#if   FUNC == 0
+#if FUNC == 0
             ret = brute_force(n, p, desired_sum, b);
 #elif FUNC == 1
             ret = brute_force_recursive(n, p, desired_sum, 0, 0, 0, b);
@@ -259,13 +290,13 @@ int main(void)
             ret = schroeppel_and_shamir();
 #endif
 
-            /* instante final */  
+            /* instante final */
             t2 = cpu_time();
 
-            /* 
+            /*
              * impressão na consola
              */
-#if DEBUG   
+#if DEBUG
             /* valor de retorno */
             printf("ret=%d\t", ret);
             /* tempo de execução */
@@ -281,10 +312,10 @@ int main(void)
             {
                 printf("Não foi encontrada uma solução!\n");
             }
-#else       
+#else
             /* tempo de execução */
             (ret == 1) ? printf("%f\t", t2 - t1) : printf("NaN\t");
-#endif     
+#endif
         }
 
         printf("\n");
