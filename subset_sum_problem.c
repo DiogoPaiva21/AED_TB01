@@ -166,18 +166,18 @@ int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current
 }
 
 /* 
- * 1 - imprime os resultados, uma solução por linha
- * 0 - imprime os tempos de cada problema n, todos na mesma linha
+ * 1 - imprime na consola o valor de retorno, o tempo de execução e o resultado de cada soma
+ * 0 - imprime na consola os tempos de execução das somas de um problema n, na mesma linha e separados por '\t'
  */
 #ifndef DEBUG
-#define DEBUG 1
+#define DEBUG 0
 #endif
 
 /* 
  * Determinar até ao problema com N_LIMIT valores a somar
  */
 #ifndef N_LIMIT
-#define N_LIMIT 30
+#define N_LIMIT 25
 #endif
 
 /* 
@@ -188,7 +188,7 @@ int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current
  * 4 - schroeppel and shamir
  */
 #ifndef FUNC
-#define FUNC 3
+#define FUNC 2
 #endif
 
 /* Main program */
@@ -202,6 +202,15 @@ int main(void)
     fprintf(stderr, "  integer_t ... %d bits\n", 8 * (int)sizeof(integer_t));
 
     int ret;        // valor de retorno das funções
+    double t1, t2;  // instantes inicial e final
+
+#if !DEBUG
+    /* cabeçalho da tabela */
+    printf("n\t");
+    for (int i = 1; i <= 20; i++)
+        printf("t%d\t", i);
+    printf("\n");
+#endif
 
     /* 
      * para cada problema
@@ -210,14 +219,20 @@ int main(void)
     {
         int n = all_subset_sum_problems[i].n;        // número de valores a somar
         integer_t *p = all_subset_sum_problems[i].p; // conjunto com os valores a somar
-        int b[n];                                    // solução
+        int b[n];                                    // resultado
 
         /* ignorar problemas com n superior */
         if (n > N_LIMIT)
             continue;
 
-        /* imprime o n do problema atual */
-        if (DEBUG) printf("n=%d\n", n);
+        /* 
+         * impressão na consola do n do problema atual
+         */
+#if DEBUG
+        printf("n=%d\n", n);
+#else
+        printf("%d\t", n);
+#endif
 
         /* 
          * para cada soma
@@ -226,10 +241,8 @@ int main(void)
         {
             integer_t desired_sum = all_subset_sum_problems[i].sums[j]; // soma desejada
             
-#if !DEBUG
             /* instante inicial */  
-            double t1 = cpu_time();
-#endif
+            t1 = cpu_time();
 
             /* 
              * execução da função
@@ -246,18 +259,20 @@ int main(void)
             ret = schroeppel_and_shamir();
 #endif
 
-#if !DEBUG
             /* instante final */  
-            double t2 = cpu_time();
-#endif
+            t2 = cpu_time();
 
             /* 
-             * impressão de resultados / tempos
+             * impressão na consola
              */
-#if DEBUG     
+#if DEBUG   
+            /* valor de retorno */
+            printf("ret=%d\t", ret);
+            /* tempo de execução */
+            printf("%f\t", t2 - t1);
+            /* resultado */
             if (ret == 1)
             {
-                /* imprime o resultado */
                 for (int i = 0; i < n; i++)
                     printf("%d", b[i]);
                 printf("\n");
@@ -267,19 +282,12 @@ int main(void)
                 printf("Não foi encontrada uma solução!\n");
             }
 #else       
-            if (ret == 1) {  
-                /* imprime os tempos */
-                printf("%f\t", t2 - t1);
-            }
-            else
-            {
-                printf("NaN\t");
-            }
+            /* tempo de execução */
+            (ret == 1) ? printf("%f\t", t2 - t1) : printf("NaN\t");
 #endif     
         }
 
-        /* mudança de linha, para os tempos do problema seguinte */  
-        if (!DEBUG) printf("\n");
+        printf("\n");
     }
 
     return 0;
