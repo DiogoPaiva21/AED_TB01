@@ -87,10 +87,16 @@ typedef struct
 {
     integer_t sum;
     unsigned long mask;
-} 
-horowitz_and_sahni_data_t;
+} hs_data_t;
 
-/* ------------------------------------------ Funções ------------------------------------------- */
+/* ------------------------------------- Funções de Suporte ------------------------------------- */
+
+int hs_data_cmpfunc(hs_data_t *d1, hs_data_t *d2)
+{
+    return d1->sum - d2->sum;
+}
+
+/* ----------------------------------- Funções dos Algoritmos ----------------------------------- */
 
 /**
  * @brief Determina a combinação dos valores de p cujo somatório é desired_sum, por um método brute force não recursivo.
@@ -217,7 +223,7 @@ int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current
  */
 int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int b[n])
 {
-    
+
     return 0;
 }
 
