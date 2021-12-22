@@ -110,7 +110,7 @@ int hs_data_cmpfunc(hs_data_t *d1, hs_data_t *d2)
  */
 int brute_force(int n, integer_t p[n], integer_t desired_sum, int r[n])
 {
-    unsigned long mask;     // máscara
+    unsigned long mask; // máscara
     integer_t test_sum; // soma de teste
 
     /* para cada combinação */
@@ -223,7 +223,7 @@ int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current
  */
 int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
 {
-    int size_a = n / 2;
+    /* int size_a = n / 2;
     int size_b = n - size_a;
 
     int size_a_sum = 1 << size_a;
@@ -236,7 +236,7 @@ int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
     for (int int = 0; mask < size_a_sum; mask++)
     {
         
-    }
+    } */
 
 
     return 0;
