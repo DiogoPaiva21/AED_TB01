@@ -67,7 +67,7 @@
  * Determinar até ao problema com N_LIMIT valores a somar
  */
 #ifndef N_LIMIT
-#define N_LIMIT 10
+#define N_LIMIT 11
 #endif
 
 /*
@@ -93,7 +93,9 @@ typedef struct
 
 int hs_data_cmpfunc(const void *d1, const void *d2)
 {
-    return ( (hs_data_t*)d1.sum - (hs_data_t*)d2.sum);
+    hs_data_t *data1 = (hs_data_t *)d1;
+    hs_data_t *data2 = (hs_data_t *)d2;
+    return (data1->sum - data2->sum);
 }
 
 /* ----------------------------------- Funções dos Algoritmos ----------------------------------- */
@@ -125,7 +127,7 @@ int brute_force(int n, integer_t p[n], integer_t desired_sum, int r[n])
         /* foi descoberta a soma */
         if (test_sum == desired_sum)
         {
-            /* guardar a máscara no array b */
+            /* guardar a máscara no array r */
             for (int i = 0; i < n; i++)
                 r[i] = ((mask & (1 << (n-i-1))) == 0) ? 0 : 1;
             return 1;
@@ -154,7 +156,7 @@ int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int curr
     /* foi descoberta a soma */
     if (partial_sum == desired_sum)
     {
-        /* guardar a máscara no array b */
+        /* guardar a máscara no array r */
         for (int i = 0; i < n; i++)
             r[i] = ((mask & (1 << (n-i-1))) == 0) ? 0 : 1;
         return 1;
@@ -192,7 +194,7 @@ int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current
     /* foi descoberta a soma */
     if (partial_sum == desired_sum)
     {
-        /* guardar a máscara no array b */
+        /* guardar a máscara no array r */
         for (int i = 0; i < n; i++)
             r[i] = ((mask & (1 << (n-i-1))) == 0) ? 0 : 1;
         return 1;
@@ -248,23 +250,75 @@ int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
         b[i].sum = 0;
         for (int j = 0; j < n; j++)
             if ((i & (1 << (size_b-j-1))) != 0)
-                b[i].sum += p[j+size_a-1];
+                b[i].sum += p[j+size_a];
     }
 
     /* sort do array a */
-    qsort(a, size_a, sizeof(hs_data_t), hs_data_cmpfunc);
+    qsort(a, size_a_sum, sizeof(hs_data_t), hs_data_cmpfunc);
 
     /* sort do array b */
+    qsort(b, size_b_sum, sizeof(hs_data_t), hs_data_cmpfunc);
 
-    for (int i = 0; i < size_a_sum; i++)
-        printf("%lld ",a[i].sum);
-    printf("\n");
-    for (int i = 0; i < size_b_sum; i++)
-        printf("%lld ",b[i].sum);
-    printf("\n");
+    /* aplicação do método */
+    int i = 0;
+    int j = size_b_sum-1;
+    integer_t test_sum;
 
-    return 0;
+    int ret = 0;
+    while (1)
+    {
+        test_sum = a[i].sum + b[j].sum;
+
+        if (test_sum < desired_sum)
+        {
+            i++;
+        }
+        else if (test_sum > desired_sum)
+        {
+            j--;
+        }
+        else {
+            ret = 1;
+            break;
+        }
+
+        if (i >= size_a_sum || j < 0)
+        {
+            ret = 0;
+            break;
+        }
+    }
+    if (ret == 1)
+    {
+        /* guardar a máscara no array r */
+        for (int k = 0; k < n; k++)
+        {
+            if (k < size_a)
+            {
+                r[k] = (( a[i].mask & (1 << (n-k-size_b-1))) == 0) ? 0 : 1;
+            }
+            else
+            {
+                r[k] = (( b[j].mask & (1 << (n-k-1))) == 0) ? 0 : 1;
+            }
+        }
+    }
+
+    return ret;
 }
+
+/**
+ * @brief Determina a combinação dos valores de p cujo somatório é desired_sum, pelo método de Schroeppel e Shamir.
+ *
+ * @param n                 Tamanho de p
+ * @param p                 Conjunto com os valores a somar
+ * @param desired_sum       Soma desejada
+ * @param r                 Array que guarda a solução
+ *
+ * @return                  1 se foi encontrada uma solução, 0 caso contrário
+ *
+ */
+int schroeppel_and_shamir(n, p, desired)
 
 /* ------------------------------------- Programa Principal ------------------------------------- */
 
