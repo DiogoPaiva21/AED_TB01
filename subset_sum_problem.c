@@ -78,7 +78,7 @@
  * 4 - schroeppel and shamir
  */
 #ifndef FUNC
-#define FUNC 1
+#define FUNC 0
 #endif
 
 /* ------------------------------------ Estruturas de Dados ------------------------------------- */
@@ -119,7 +119,7 @@ int brute_force(int n, integer_t p[n], integer_t desired_sum, int r[n])
         /* determinar a soma dos valores de p */
         test_sum = 0;
         for (int i = 0; i < n; i++)
-            if ((mask & (1 << i)) != 0)
+            if ((mask & (1 << n-i-1)) != 0)
                 test_sum += p[i];
 
         /* foi descoberta a soma */
@@ -127,7 +127,7 @@ int brute_force(int n, integer_t p[n], integer_t desired_sum, int r[n])
         {
             /* guardar a máscara no array b */
             for (int i = 0; i < n; i++)
-                r[i] = ((mask & (1 << i)) == 0) ? 0 : 1;
+                r[i] = ((mask & (1 << n-i-1)) == 0) ? 0 : 1;
             return 1;
         }
     }
@@ -156,7 +156,7 @@ int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int curr
     {
         /* guardar a máscara no array b */
         for (int i = 0; i < n; i++)
-            r[i] = ((mask & (1 << i)) == 0) ? 0 : 1;
+            r[i] = ((mask & (1 << n-i-1)) == 0) ? 0 : 1;
         return 1;
     }
 
@@ -194,7 +194,7 @@ int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current
     {
         /* guardar a máscara no array b */
         for (int i = 0; i < n; i++)
-            r[i] = ((mask & (1 << i)) == 0) ? 0 : 1;
+            r[i] = ((mask & (1 << n-i-1)) == 0) ? 0 : 1;
         return 1;
     }
 
@@ -223,20 +223,21 @@ int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current
  */
 int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
 {
-    /* int size_a = n / 2;
+    int size_a = n / 2;
     int size_b = n - size_a;
 
     int size_a_sum = 1 << size_a;
     int size_b_sum = 1 << size_b;
 
-    unsigned long mask;
+    hs_data_t a[size_a_sum], b[size_b_sum];
 
-    hs_data_t a_data[size_a_sum], b_data[size_b_sum];
-
-    for (int int = 0; mask < size_a_sum; mask++)
+    /* somas para o array a */
+    for (int i = 0; i < size_a_sum; i++)
     {
-        
-    } */
+        a[i].mask = i;
+        a[i].sum = 0;
+        for (int j = 0)
+    }
 
 
     return 0;
