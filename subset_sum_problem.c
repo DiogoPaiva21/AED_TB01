@@ -104,13 +104,13 @@ int hs_data_cmpfunc(hs_data_t *d1, hs_data_t *d2)
  * @param n             Tamanho de p
  * @param p             Conjunto com os valores a somar
  * @param desired_sum   Soma desejada
- * @param b             Array que guarda a solução
+ * @param r             Array que guarda a solução
  *
  * @return              1 se foi encontrada uma solução, 0 caso contrário
  */
-int brute_force(int n, integer_t p[n], integer_t desired_sum, int b[n])
+int brute_force(int n, integer_t p[n], integer_t desired_sum, int r[n])
 {
-    integer_t mask;     // máscara
+    unsigned long mask;     // máscara
     integer_t test_sum; // soma de teste
 
     /* para cada combinação */
@@ -127,7 +127,7 @@ int brute_force(int n, integer_t p[n], integer_t desired_sum, int b[n])
         {
             /* guardar a máscara no array b */
             for (int i = 0; i < n; i++)
-                b[i] = ((mask & (1 << i)) == 0) ? 0 : 1;
+                r[i] = ((mask & (1 << i)) == 0) ? 0 : 1;
             return 1;
         }
     }
@@ -144,19 +144,19 @@ int brute_force(int n, integer_t p[n], integer_t desired_sum, int b[n])
  * @param current_index     Índice atual em p
  * @param partial_sum       Soma atual
  * @param mask              Máscara atual
- * @param b                 Array que guarda a solução
+ * @param r                 Array que guarda a solução
  *
  * @return                  1 se foi encontrada uma solução, 0 caso contrário
  *
  */
-int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int current_index, integer_t partial_sum, unsigned long mask, int b[n])
+int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int current_index, integer_t partial_sum, unsigned long mask, int r[n])
 {
     /* foi descoberta a soma */
     if (partial_sum == desired_sum)
     {
         /* guardar a máscara no array b */
         for (int i = 0; i < n; i++)
-            b[i] = ((mask & (1 << i)) == 0) ? 0 : 1;
+            r[i] = ((mask & (1 << i)) == 0) ? 0 : 1;
         return 1;
     }
 
@@ -165,9 +165,9 @@ int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int curr
     if (current_index < n)
     {
         /* p[current_index] não é usado na soma */
-        ret |= brute_force_recursive(n, p, desired_sum, current_index + 1, partial_sum, mask, b);
+        ret |= brute_force_recursive(n, p, desired_sum, current_index + 1, partial_sum, mask, r);
         /* p[current_index] é usado na soma */
-        ret |= brute_force_recursive(n, p, desired_sum, current_index + 1, partial_sum + p[current_index], mask | (1 << current_index), b);
+        ret |= brute_force_recursive(n, p, desired_sum, current_index + 1, partial_sum + p[current_index], mask | (1 << current_index), r);
     }
     return ret;
 }
@@ -182,19 +182,19 @@ int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int curr
  * @param current_index     Índice atual em p
  * @param partial_sum       Soma atual
  * @param mask              Máscara atual
- * @param b                 Array que guarda a solução
+ * @param r                 Array que guarda a solução
  *
  * @return                  1 se foi encontrada uma solução, 0 caso contrário
  *
  */
-int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current_index, integer_t partial_sum, unsigned long mask, int b[n])
+int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current_index, integer_t partial_sum, unsigned long mask, int r[n])
 {
     /* foi descoberta a soma */
     if (partial_sum == desired_sum)
     {
         /* guardar a máscara no array b */
         for (int i = 0; i < n; i++)
-            b[i] = ((mask & (1 << i)) == 0) ? 0 : 1;
+            r[i] = ((mask & (1 << i)) == 0) ? 0 : 1;
         return 1;
     }
 
@@ -203,9 +203,9 @@ int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current
     if (current_index < n && partial_sum < desired_sum)
     {
         /* p[current_index] não é usado na soma */
-        ret |= brute_force_clever(n, p, desired_sum, current_index + 1, partial_sum, mask, b);
+        ret |= brute_force_clever(n, p, desired_sum, current_index + 1, partial_sum, mask, r);
         /* p[current_index] é usado na soma */
-        ret |= brute_force_clever(n, p, desired_sum, current_index + 1, partial_sum + p[current_index], mask | (1 << current_index), b);
+        ret |= brute_force_clever(n, p, desired_sum, current_index + 1, partial_sum + p[current_index], mask | (1 << current_index), r);
     }
     return ret;
 }
@@ -216,13 +216,28 @@ int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current
  * @param n                 Tamanho de p
  * @param p                 Conjunto com os valores a somar
  * @param desired_sum       Soma desejada
- * @param b                 Array que guarda a solução
+ * @param r                 Array que guarda a solução
  *
  * @return                  1 se foi encontrada uma solução, 0 caso contrário
  *
  */
-int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int b[n])
+int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
 {
+    int size_a = n / 2;
+    int size_b = n - size_a;
+
+    int size_a_sum = 1 << size_a;
+    int size_b_sum = 1 << size_b;
+
+    unsigned long mask;
+
+    hs_data_t a_data[size_a_sum], b_data[size_b_sum];
+
+    for (int int = 0; mask < size_a_sum; mask++)
+    {
+        
+    }
+
 
     return 0;
 }
@@ -256,7 +271,7 @@ int main(void)
     {
         int n = all_subset_sum_problems[i].n;        // número de valores a somar
         integer_t *p = all_subset_sum_problems[i].p; // conjunto com os valores a somar
-        int b[n];                                    // resultado
+        int r[n];                                    // resultado
 
         /* ignorar problemas com n superior */
         if (n > N_LIMIT)
@@ -285,11 +300,11 @@ int main(void)
              * execução da função
              */
 #if FUNC == 0
-            ret = brute_force(n, p, desired_sum, b);
+            ret = brute_force(n, p, desired_sum, r);
 #elif FUNC == 1
-            ret = brute_force_recursive(n, p, desired_sum, 0, 0, 0, b);
+            ret = brute_force_recursive(n, p, desired_sum, 0, 0, 0, r);
 #elif FUNC == 2
-            ret = brute_force_clever(n, p, desired_sum, 0, 0, 0, b);
+            ret = brute_force_clever(n, p, desired_sum, 0, 0, 0, r);
 #elif FUNC == 3
             ret = horowitz_and_sahni();
 #elif FUNC == 4
@@ -311,7 +326,7 @@ int main(void)
             if (ret == 1)
             {
                 for (int i = 0; i < n; i++)
-                    printf("%d", b[i]);
+                    printf("%d", r[i]);
                 printf("\n");
             }
             else
