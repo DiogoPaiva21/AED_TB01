@@ -67,7 +67,7 @@
  * Determinar até ao problema com N_LIMIT valores a somar
  */
 #ifndef N_LIMIT
-#define N_LIMIT 50
+#define N_LIMIT 12
 #endif
 
 /*
@@ -78,7 +78,7 @@
  * 4 - schroeppel and shamir
  */
 #ifndef FUNC
-#define FUNC 3
+#define FUNC 4
 #endif
 
 /* ------------------------------------ Estruturas de Dados ------------------------------------- */
@@ -89,6 +89,21 @@ typedef struct
     unsigned long long mask;
 } hs_data_t;
 
+typedef struct
+{
+    integer_t sum;
+    unsigned long long mask;
+} ss_data_t;
+
+typedef struct
+{
+    integer_t sum;
+    unsigned long long mask;
+    unsigned int idx1;
+    unsigned int idx2;
+} ss_heap_data_t;
+
+
 /* ------------------------------------- Funções de Suporte ------------------------------------- */
 
 int hs_data_cmpfunc(const void *d1, const void *d2)
@@ -96,8 +111,9 @@ int hs_data_cmpfunc(const void *d1, const void *d2)
     hs_data_t *data1 = (hs_data_t *)d1;
     hs_data_t *data2 = (hs_data_t *)d2;
     return (data1->sum > data2->sum) - (data1->sum < data2->sum);
-    
 }
+
+
 
 /* ----------------------------------- Funções dos Algoritmos ----------------------------------- */
 
@@ -320,8 +336,235 @@ int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
  */
 int schroeppel_and_shamir(int n, integer_t p[n], integer_t desired_sum, int r[n])
 {
+    /* tamanho das metades de p */
+    unsigned int size_p12 = n / 2;
+    unsigned int size_p34 = n - size_p12;
+
+    /* tamanho dos quartos p1, p2, p3 e p4 */
+    unsigned int size_p1 = size_p12 / 2;
+    unsigned int size_p2 = size_p12 - size_p1;
+    unsigned int size_p3 = size_p34 / 2;
+    unsigned int size_p4 = size_p34 - size_p3;
+    
+    /* tamanho de a1, a2, b1 e b2 */
+    unsigned long long size_a1 = 1 << size_p1; // 2^size_p1
+    unsigned long long size_a2 = 1 << size_p2; // 2^size_p2
+    unsigned long long size_b1 = 1 << size_p3; // 2^size_p3
+    unsigned long long size_b2 = 1 << size_p4; // 2^size_p4
+
+    /* alocação de a e b em memória */
+    ss_data_t *a1 = (ss_data_t *)malloc(size_a1 * sizeof(ss_data_t));
+    ss_data_t *a2 = (ss_data_t *)malloc(size_a2 * sizeof(ss_data_t));
+    ss_data_t *b1 = (ss_data_t *)malloc(size_b1 * sizeof(ss_data_t));
+    ss_data_t *b2 = (ss_data_t *)malloc(size_b2 * sizeof(ss_data_t));
+    
+    /* gerar elementos de a1 */
+    for (unsigned long long i = 0; i < size_a1; i++)
+    {
+        /* máscara */
+        a1[i].mask = i;
+        /* soma */
+        a1[i].sum = 0;
+        for (unsigned int j = 0; j < size_p1; j++)
+            if (a1[i].mask & (1 << (size_p1 - j - 1)))
+                a1[i].sum += p[j];
+    }
+    /* gerar elementos de a2 */
+    for (unsigned long long i = 0; i < size_a2; i++)
+    {
+        /* máscara */
+        a2[i].mask = i;
+        /* soma */
+        a2[i].sum = 0;
+        for (unsigned int j = 0; j < size_p2; j++)
+            if (a2[i].mask & (1 << (size_p2 - j - 1)))
+                a2[i].sum += p[j + size_p1];
+    }
+    /* gerar elementos de b1 */
+    for (unsigned long long i = 0; i < size_b1; i++)
+    {
+        /* máscara */
+        b1[i].mask = i;
+        /* soma */
+        b1[i].sum = 0;
+        for (unsigned int j = 0; j < size_p3; j++)
+            if (b1[i].mask & (1 << (size_p3 - j - 1)))
+                b1[i].sum += p[j + size_p1 + size_p2];
+    }
+    /* gerar elementos de b2 */
+    for (unsigned long long i = 0; i < size_b2; i++)
+    {
+        /* máscara */
+        b2[i].mask = i;
+        /* soma */
+        b2[i].sum = 0;
+        for (unsigned int j = 0; j < size_p4; j++)
+            if (b2[i].mask & (1 << (size_p4 - j - 1)))
+                b2[i].sum += p[j + size_p1 + size_p2 + size_p3];
+    }
+
+    /* ordenação (quicksort) dos elementos de a1, a2, b1 e b2 */
+    qsort(a1, size_a1, sizeof(ss_data_t), hs_data_cmpfunc);
+    qsort(b1, size_b1, sizeof(ss_data_t), hs_data_cmpfunc);
+    qsort(a2, size_a2, sizeof(ss_data_t), hs_data_cmpfunc);
+    qsort(b2, size_b2, sizeof(ss_data_t), hs_data_cmpfunc);
+
+    printf("a1=[");
+    for (int i = 0; i < size_a1; i++)
+        printf("%llu, ",a1[i].sum);
+    printf("]\n");
+    printf("a2=[");
+    for (int i = 0; i < size_a2; i++)
+        printf("%llu, ",a2[i].sum);
+    printf("]\n");
+    printf("b1=[");
+    for (int i = 0; i < size_b1; i++)
+        printf("%llu, ",b1[i].sum);
+    printf("]\n");
+    printf("b2=[");
+    for (int i = 0; i < size_b2; i++)
+        printf("%llu, ",b2[i].sum);
+    printf("]\n");
+
+    /* desalocação de a1, a2, b1 e b2 em memória */
+    free(a1);
+    free(a2);
+    free(b1);
+    free(b2);
+
     return 0;
 }
+
+/*--------------------------------------------Max-Heap--------------------------------------------*/
+
+#define MAX_SIZE 15
+
+// returns the index of the parent node
+int parent(int i) {
+    return (i - 1) / 2;
+}
+
+// return the index of the left child 
+int left_child(int i) {
+    return 2*i + 1;
+}
+
+// return the index of the right child 
+int right_child(int i) {
+    return 2*i + 2;
+}
+
+void swap(int *x, int *y) {
+    int temp = *x;
+    *x = *y;
+    *y = temp;
+}
+
+// insert the item at the appropriate position
+void insert(int a[], int data, int *n) {
+    if (*n >= MAX_SIZE) {
+        printf("%s\n", "The heap is full. Cannot insert");
+        return;
+    }
+    // first insert the time at the last position of the array 
+    // and move it up
+    a[*n] = data;
+    *n = *n + 1;
+
+
+    // move up until the heap property satisfies
+    int i = *n - 1;
+    while (i != 0 && a[parent(i)] < a[i]) {
+        swap(&a[parent(i)], &a[i]);
+        i = parent(i);
+    }
+}
+
+// moves the item at position i of array a
+// into its appropriate position
+void max_heapify(int a[], int i, int n){
+    // find left child node
+    int left = left_child(i);
+
+    // find right child node
+    int right = right_child(i);
+
+    // find the largest among 3 nodes
+    int largest = i;
+
+    // check if the left node is larger than the current node
+    if (left <= n && a[left] > a[largest]) {
+        largest = left;
+    }
+
+    // check if the right node is larger than the current node
+    if (right <= n && a[right] > a[largest]) {
+        largest = right;
+    }
+
+    // swap the largest node with the current node 
+    // and repeat this process until the current node is larger than 
+    // the right and the left node
+    if (largest != i) {
+        int temp = a[i];
+        a[i] = a[largest];
+        a[largest] = temp;
+        max_heapify(a, largest, n);
+    }
+
+}
+
+// converts an array into a heap
+void build_max_heap(int a[], int n) {
+    int i;
+    for (i = n/2; i >= 0; i--) {
+        max_heapify(a, i, n);
+    } 
+}
+
+// returns the  maximum item of the heap
+int get_max(int a[]) {
+    return a[0];
+}
+
+// deletes the max item and return
+int extract_max(int a[], int *n) {
+    int max_item = a[0];
+
+    // replace the first item with the last item
+    a[0] = a[*n - 1];
+    *n = *n - 1;
+
+    // maintain the heap property by heapifying the 
+    // first item
+    max_heapify(a, 0, *n);
+    return max_item;
+}
+
+// prints the heap
+void print_heap(int a[], int n) {
+    int i;
+    for (i = 0; i < n; i++) {
+        printf("%d\n", a[i]);
+    }
+    printf("\n");
+}
+
+
+/* int main() {
+    int n = 10;
+    int a[MAX_SIZE];
+    a[1] = 10; a[2] = 12; a[3] = 9; a[4] = 78; a[5] = 33; a[6] = 21; a[7] = 35; a[8] = 29; a[9] = 5; a[10] = 66;
+    build_max_heap(a, n);
+    insert(a, 55, &n);
+    insert(a, 56, &n);
+    insert(a, 57, &n);
+    insert(a, 58, &n);
+    insert(a, 100, &n);
+    print_heap(a, n);
+    return 0;
+} */
+
 
 /* ------------------------------------- Programa Principal ------------------------------------- */
 
@@ -390,7 +633,7 @@ int main(void)
 #elif FUNC == 3
             ret = horowitz_and_sahni(n, p, desired_sum, r);
 #elif FUNC == 4
-            ret = schroeppel_and_shamir();
+            ret = schroeppel_and_shamir(n, p, desired_sum, r);
 #endif
 
             /* instante final */
