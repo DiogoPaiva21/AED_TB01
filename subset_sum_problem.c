@@ -264,11 +264,11 @@ int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
     qsort(a, size_a, sizeof(hs_data_t), hs_data_cmpfunc);
     qsort(b, size_b, sizeof(hs_data_t), hs_data_cmpfunc);
 
-    unsigned int ret = 0;              // valor de retorno é zero se não for encontrada nenhuma solução */
-    unsigned long long i = 0;          // indexa os elementos de a
-    unsigned long long j = size_b - 1; // indexa os elementos de b
-    integer_t test_sum;                // soma de teste
-    unsigned int k;                    // posição do bit da máscara
+    unsigned int ret = 0;            // valor de retorno é zero se não for encontrada nenhuma solução */
+    unsigned long long i = 0;        // indexa os elementos de a
+    signed long long j = size_b - 1; // indexa os elementos de b
+    integer_t test_sum;              // soma de teste
+    unsigned int k;                  // posição do bit da máscara
 
     /* método de Horowitz e Sahni */
     while (i < size_a && j >= 0)
