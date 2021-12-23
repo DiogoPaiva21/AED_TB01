@@ -67,7 +67,7 @@
  * Determinar até ao problema com N_LIMIT valores a somar
  */
 #ifndef N_LIMIT
-#define N_LIMIT 32
+#define N_LIMIT 50
 #endif
 
 /*
@@ -95,7 +95,8 @@ int hs_data_cmpfunc(const void *d1, const void *d2)
 {
     hs_data_t *data1 = (hs_data_t *)d1;
     hs_data_t *data2 = (hs_data_t *)d2;
-    return (data1->sum - data2->sum);
+    return (data1->sum > data2->sum) - (data1->sum < data2->sum);
+    
 }
 
 /* ----------------------------------- Funções dos Algoritmos ----------------------------------- */
@@ -228,6 +229,7 @@ int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
     /* tamanho das metades de p */
     unsigned int size_p1 = n / 2;
     unsigned int size_p2 = n - size_p1;
+    
     /* tamanho de a e b */
     unsigned long long size_a = 1 << size_p1; // 2^size_p1
     unsigned long long size_b = 1 << size_p2; // 2^size_p2
@@ -274,7 +276,6 @@ int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
     while (i < size_a && j >= 0)
     {
         test_sum = a[i].sum + b[j].sum;
-
         if (test_sum < desired_sum)
         {
             i++;
@@ -331,7 +332,7 @@ int main(void)
     fprintf(stderr, "  max_n ....... %d\n", max_n);
     fprintf(stderr, "  n_sums ...... %d\n", n_sums);
     fprintf(stderr, "  n_problems .. %d\n", n_problems);
-    fprintf(stderr, "  integer_t ... %d bits\n", 8 * (int)sizeof(hs_data_t));
+    fprintf(stderr, "  integer_t ... %d bits\n", 8 * (int)sizeof(integer_t));
     fprintf(stderr, "  function .... %d\n", FUNC);
 
     int ret;       // valor de retorno das funções
@@ -358,9 +359,9 @@ int main(void)
         if (n > N_LIMIT)
             continue;
 
-            /*
-             * impressão na consola do n do problema atual
-             */
+        /*
+         * impressão na consola do n do problema atual
+         */
 #if DEBUG
         printf("n=%d\n", n);
 #else
