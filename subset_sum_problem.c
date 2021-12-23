@@ -67,7 +67,7 @@
  * Determinar até ao problema com N_LIMIT valores a somar
  */
 #ifndef N_LIMIT
-#define N_LIMIT 11
+#define N_LIMIT 32
 #endif
 
 /*
@@ -86,7 +86,7 @@
 typedef struct
 {
     integer_t sum;
-    unsigned long mask;
+    unsigned long long mask;
 } hs_data_t;
 
 /* ------------------------------------- Funções de Suporte ------------------------------------- */
@@ -112,8 +112,8 @@ int hs_data_cmpfunc(const void *d1, const void *d2)
  */
 int brute_force(int n, integer_t p[n], integer_t desired_sum, int r[n])
 {
-    unsigned long mask; // máscara
-    integer_t test_sum; // soma de teste
+    unsigned long long mask; // máscara
+    integer_t test_sum;      // soma de teste
 
     /* para cada combinação */
     for (mask = 0; mask < (1 << n); mask++)
@@ -121,7 +121,7 @@ int brute_force(int n, integer_t p[n], integer_t desired_sum, int r[n])
         /* determinar a soma dos valores de p */
         test_sum = 0;
         for (int i = 0; i < n; i++)
-            if ((mask & (1 << (n-i-1))) != 0)
+            if ((mask & (1 << (n - i - 1))) != 0)
                 test_sum += p[i];
 
         /* foi descoberta a soma */
@@ -129,7 +129,7 @@ int brute_force(int n, integer_t p[n], integer_t desired_sum, int r[n])
         {
             /* guardar a máscara no array r */
             for (int i = 0; i < n; i++)
-                r[i] = ((mask & (1 << (n-i-1))) == 0) ? 0 : 1;
+                r[i] = ((mask & (1 << (n - i - 1))) == 0) ? 0 : 1;
             return 1;
         }
     }
@@ -151,14 +151,14 @@ int brute_force(int n, integer_t p[n], integer_t desired_sum, int r[n])
  * @return                  1 se foi encontrada uma solução, 0 caso contrário
  *
  */
-int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int current_index, integer_t partial_sum, unsigned long mask, int r[n])
+int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int current_index, integer_t partial_sum, unsigned long long mask, int r[n])
 {
     /* foi descoberta a soma */
     if (partial_sum == desired_sum)
     {
         /* guardar a máscara no array r */
         for (int i = 0; i < n; i++)
-            r[i] = ((mask & (1 << (n-i-1))) == 0) ? 0 : 1;
+            r[i] = ((mask & (1 << (n - i - 1))) == 0) ? 0 : 1;
         return 1;
     }
 
@@ -169,7 +169,7 @@ int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int curr
         /* p[current_index] não é usado na soma */
         ret |= brute_force_recursive(n, p, desired_sum, current_index + 1, partial_sum, mask, r);
         /* p[current_index] é usado na soma */
-        ret |= brute_force_recursive(n, p, desired_sum, current_index + 1, partial_sum + p[current_index], mask | (1 << current_index), r);
+        ret |= brute_force_recursive(n, p, desired_sum, current_index + 1, partial_sum + p[current_index], mask | (1 << (n - current_index - 1)), r);
     }
     return ret;
 }
@@ -189,14 +189,14 @@ int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int curr
  * @return                  1 se foi encontrada uma solução, 0 caso contrário
  *
  */
-int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current_index, integer_t partial_sum, unsigned long mask, int r[n])
+int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current_index, integer_t partial_sum, unsigned long long mask, int r[n])
 {
     /* foi descoberta a soma */
     if (partial_sum == desired_sum)
     {
         /* guardar a máscara no array r */
         for (int i = 0; i < n; i++)
-            r[i] = ((mask & (1 << (n-i-1))) == 0) ? 0 : 1;
+            r[i] = ((mask & (1 << (n - i - 1))) == 0) ? 0 : 1;
         return 1;
     }
 
@@ -207,7 +207,7 @@ int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current
         /* p[current_index] não é usado na soma */
         ret |= brute_force_clever(n, p, desired_sum, current_index + 1, partial_sum, mask, r);
         /* p[current_index] é usado na soma */
-        ret |= brute_force_clever(n, p, desired_sum, current_index + 1, partial_sum + p[current_index], mask | (1 << current_index), r);
+        ret |= brute_force_clever(n, p, desired_sum, current_index + 1, partial_sum + p[current_index], mask | (1 << (n - current_index - 1)), r);
     }
     return ret;
 }
@@ -225,47 +225,53 @@ int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current
  */
 int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
 {
-    int size_a = n / 2;
-    int size_b = n - size_a;
+    /* tamanho das metades de p */
+    unsigned int size_p1 = n / 2;
+    unsigned int size_p2 = n - size_p1;
+    /* tamanho de a e b */
+    unsigned long long size_a = 1 << size_p1; // 2^size_p1
+    unsigned long long size_b = 1 << size_p2; // 2^size_p2
 
-    int size_a_sum = 1 << size_a;
-    int size_b_sum = 1 << size_b;
+    /* alocação de a e b em memória */
+    hs_data_t *a = (hs_data_t *)malloc(size_a * sizeof(hs_data_t));
+    hs_data_t *b = (hs_data_t *)malloc(size_b * sizeof(hs_data_t));
 
-    hs_data_t a[size_a_sum], b[size_b_sum];
-
-    /* somas para o array a */
-    for (int i = 0; i < size_a_sum; i++)
+    /* gerar elementos de a */
+    for (unsigned long long i = 0; i < size_a; i++)
     {
+        /* máscara */
         a[i].mask = i;
+        /* soma */
         a[i].sum = 0;
-        for (int j = 0; j < n; j++)
-            if ((i & (1 << (size_a-j-1))) != 0)
+        for (unsigned int j = 0; j < size_p1; j++)
+            if (a[i].mask & (1 << (size_p1 - j - 1)))
                 a[i].sum += p[j];
     }
 
-    /* somas para o array b */
-    for (int i = 0; i < size_b_sum; i++)
+    /* gerar elementos de b */
+    for (unsigned long long i = 0; i < size_b; i++)
     {
+        /* máscara */
         b[i].mask = i;
+        /* soma */
         b[i].sum = 0;
-        for (int j = 0; j < n; j++)
-            if ((i & (1 << (size_b-j-1))) != 0)
-                b[i].sum += p[j+size_a];
+        for (unsigned int j = 0; j < size_p2; j++)
+            if (b[i].mask & (1 << (size_p2 - j - 1)))
+                b[i].sum += p[j + size_p1];
     }
 
-    /* sort do array a */
-    qsort(a, size_a_sum, sizeof(hs_data_t), hs_data_cmpfunc);
+    /* ordenação (quicksort) dos elementos de a e b */
+    qsort(a, size_a, sizeof(hs_data_t), hs_data_cmpfunc);
+    qsort(b, size_b, sizeof(hs_data_t), hs_data_cmpfunc);
 
-    /* sort do array b */
-    qsort(b, size_b_sum, sizeof(hs_data_t), hs_data_cmpfunc);
+    unsigned int ret = 0;              // valor de retorno é zero se não for encontrada nenhuma solução */
+    unsigned long long i = 0;          // indexa os elementos de a
+    unsigned long long j = size_b - 1; // indexa os elementos de b
+    integer_t test_sum;                // soma de teste
+    unsigned int k;                    // posição do bit da máscara
 
-    /* aplicação do método */
-    int i = 0;
-    int j = size_b_sum-1;
-    integer_t test_sum;
-
-    int ret = 0;
-    while (1)
+    /* método de Horowitz e Sahni */
+    while (i < size_a && j >= 0)
     {
         test_sum = a[i].sum + b[j].sum;
 
@@ -277,32 +283,25 @@ int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
         {
             j--;
         }
-        else {
+        /* foi descoberta a soma */
+        else
+        {
+            /* guardar a máscara de a[i] em r */
+            for (k = 0; k < size_p1; k++)
+                r[k] = (a[i].mask & (1 << (size_p1 - k - 1))) == 0 ? 0 : 1;
+
+            /* guardar a máscara de b[j] em r */
+            for (k = 0; k < size_p2; k++)
+                r[k + size_p1] = (b[j].mask & (1 << (size_p2 - k - 1))) == 0 ? 0 : 1;
+
             ret = 1;
             break;
         }
+    }
 
-        if (i >= size_a_sum || j < 0)
-        {
-            ret = 0;
-            break;
-        }
-    }
-    if (ret == 1)
-    {
-        /* guardar a máscara no array r */
-        for (int k = 0; k < n; k++)
-        {
-            if (k < size_a)
-            {
-                r[k] = (( a[i].mask & (1 << (n-k-size_b-1))) == 0) ? 0 : 1;
-            }
-            else
-            {
-                r[k] = (( b[j].mask & (1 << (n-k-1))) == 0) ? 0 : 1;
-            }
-        }
-    }
+    /* desalocação de a e b em memória */
+    free(a);
+    free(b);
 
     return ret;
 }
@@ -318,7 +317,10 @@ int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
  * @return                  1 se foi encontrada uma solução, 0 caso contrário
  *
  */
-int schroeppel_and_shamir(n, p, desired)
+int schroeppel_and_shamir(int n, integer_t p[n], integer_t desired_sum, int r[n])
+{
+    return 0;
+}
 
 /* ------------------------------------- Programa Principal ------------------------------------- */
 
@@ -329,7 +331,8 @@ int main(void)
     fprintf(stderr, "  max_n ....... %d\n", max_n);
     fprintf(stderr, "  n_sums ...... %d\n", n_sums);
     fprintf(stderr, "  n_problems .. %d\n", n_problems);
-    fprintf(stderr, "  integer_t ... %d bits\n", 8 * (int)sizeof(integer_t));
+    fprintf(stderr, "  integer_t ... %d bits\n", 8 * (int)sizeof(hs_data_t));
+    fprintf(stderr, "  function .... %d\n", FUNC);
 
     int ret;       // valor de retorno das funções
     double t1, t2; // instantes inicial e final
