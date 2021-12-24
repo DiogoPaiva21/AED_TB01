@@ -3,7 +3,9 @@
 //
 // Solution of the first practical assignement (subset sum problem)
 //
-// Place your student numbers and names here
+// 103154 - João Fonseca
+// 103183 - Diogo Paiva
+// 103865 - Jorge Silva
 //
 
 #if __STDC_VERSION__ < 199901L
