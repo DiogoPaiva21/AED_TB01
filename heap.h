@@ -18,7 +18,6 @@ typedef unsigned long long integer_t;   // 64-bit unsigned integer
 typedef struct
 {
     integer_t sum;
-    unsigned int mask;
     unsigned int i1;
     unsigned int i2;
 } heap_data_t;
