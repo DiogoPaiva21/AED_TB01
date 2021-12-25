@@ -44,7 +44,7 @@
  *   subset_sum_problem_data_t;               --- weights p[] and sums for a given value of n
  *
  *   subset_sum_problem_data_t all_subset_sum_problems[n_problems]; --- // the problems
-*/
+ */
 
 /* ------------------------------------------- Macros ------------------------------------------- */
 
@@ -60,7 +60,7 @@
  * Determinar até ao problema com N_LIMIT valores a somar
  */
 #ifndef N_LIMIT
-#define N_LIMIT 10
+#define N_LIMIT 25
 #endif
 
 /*
@@ -71,7 +71,7 @@
  * 4 - schroeppel and shamir
  */
 #ifndef FUNC
-#define FUNC 4
+#define FUNC 0
 #endif
 
 /* ------------------------------------ Estruturas de Dados ------------------------------------- */
@@ -226,7 +226,7 @@ int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
     unsigned long long size_a = 1 << size_p1; // 2^size_p1
     unsigned long long size_b = 1 << size_p2; // 2^size_p2
 
-    /* alocação de a e b em memória */
+    /* alocar a e b na memória */
     sm_data_t *a = (sm_data_t *)malloc(size_a * sizeof(sm_data_t));
     sm_data_t *b = (sm_data_t *)malloc(size_b * sizeof(sm_data_t));
 
@@ -254,11 +254,11 @@ int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
                 b[i].sum += p[j + size_p1];
     }
 
-    /* ordenação (quicksort) dos elementos de a e b */
+    /* ordenar (quicksort) os elementos de a e de b */
     qsort(a, size_a, sizeof(sm_data_t), sm_data_cmpfunc);
     qsort(b, size_b, sizeof(sm_data_t), sm_data_cmpfunc);
 
-    unsigned int ret = 0;            // valor de retorno é zero se não for encontrada nenhuma solução */
+    unsigned int ret = 0;            // valor de retorno é zero se não for encontrada nenhuma solução
     unsigned long long i = 0;        // indexa os elementos de a
     signed long long j = size_b - 1; // indexa os elementos de b
     integer_t test_sum;              // soma de teste
@@ -268,6 +268,7 @@ int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
     while (i < size_a && j >= 0)
     {
         test_sum = a[i].sum + b[j].sum;
+
         if (test_sum < desired_sum)
         {
             i++;
@@ -292,7 +293,7 @@ int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
         }
     }
 
-    /* desalocação de a e b em memória */
+    /* desalocar a e b da memória */
     free(a);
     free(b);
 
@@ -328,7 +329,7 @@ int schroeppel_and_shamir(int n, integer_t p[n], integer_t desired_sum, int r[n]
     unsigned int size_b1 = 1 << size_p3; // 2^size_p3
     unsigned int size_b2 = 1 << size_p4; // 2^size_p4
 
-    /* alocação de a e b em memória */
+    /* alocar a e b na memória */
     sm_data_t *a1 = (sm_data_t *)malloc(size_a1 * sizeof(sm_data_t));
     sm_data_t *a2 = (sm_data_t *)malloc(size_a2 * sizeof(sm_data_t));
     sm_data_t *b1 = (sm_data_t *)malloc(size_b1 * sizeof(sm_data_t));
@@ -379,21 +380,102 @@ int schroeppel_and_shamir(int n, integer_t p[n], integer_t desired_sum, int r[n]
                 b2[i].sum += p[j + size_p1 + size_p2 + size_p3];
     }
 
-    /* ordenação (quicksort) dos elementos de a1, a2, b1 e b2 */
+    /* ordenar (quicksort) os elementos de a1, a2, b1 e b2 */
     qsort(a1, size_a1, sizeof(sm_data_t), sm_data_cmpfunc);
-    qsort(b1, size_b1, sizeof(sm_data_t), sm_data_cmpfunc);
     qsort(a2, size_a2, sizeof(sm_data_t), sm_data_cmpfunc);
+    qsort(b1, size_b1, sizeof(sm_data_t), sm_data_cmpfunc);
     qsort(b2, size_b2, sizeof(sm_data_t), sm_data_cmpfunc);
 
-    
+    /* criar uma min-heap (a1 e a2) e uma max-heap (b1 e b2) */
+    heap_t *min_heap = create(size_a1, 0);
+    heap_t *max_heap = create(size_b1, 1);
 
-    /* desalocação de a1, a2, b1 e b2 em memória */
+    /* preencher as heaps com os valores iniciais */
+    heap_data_t heap_data;
+    for (unsigned int i = 0; i < size_a1; i++)
+    {
+        heap_data.sum = a1[i].sum + a2[0].sum;
+        heap_data.i1 = i;
+        heap_data.i2 = 0;
+        push(min_heap, heap_data);
+    }
+    for (unsigned int i = 0; i < size_b1; i++)
+    {
+        heap_data.sum = b1[i].sum + b2[size_b2 - 1].sum;
+        heap_data.i1 = i;
+        heap_data.i2 = size_b2 - 1;
+        push(max_heap, heap_data);
+    }
+
+    unsigned int ret = 0; // valor de retorno é zero se não for encontrada nenhuma solução
+    heap_data_t a;        // elemento removido da min-heap
+    heap_data_t b;        // elemento removido da max-heap
+    integer_t test_sum;   // soma de teste
+    unsigned int k;       // posição do bit da máscara
+
+    /* método de Schroeppel e Shamir */
+    while (min_heap->count > 0 || max_heap->count > 0)
+    {
+        /* remover elementos no topo das heaps */
+        a = pop(min_heap);
+        b = pop(max_heap);
+
+        test_sum = a.sum + b.sum;
+        if (test_sum < desired_sum)
+        {
+            /* elemento ainda pode ser inserido na min-heap */
+            if (a.i2 + 1 < size_a2)
+            {
+                a.sum = a1[a.i1].sum + a2[++a.i2].sum;
+                push(min_heap, a); // inserir elemento novamente na min-heap
+            }
+            push(max_heap, b); // inserir elemento novamente na max-heap
+        }
+        else if (test_sum > desired_sum)
+        {
+            /* elemento ainda pode ser inserido na max-heap */
+            if ((signed int)b.i2 - 1 >= 0)
+            {
+                b.sum = b1[b.i1].sum + b2[--b.i2].sum;
+                push(max_heap, b); // inserir elemento novamente na max-heap
+            }
+            push(min_heap, a); // inserir elemento novamente na min-heap
+        }
+        /* foi descoberta a soma */
+        else
+        {
+            /* guardar a máscara de a1[a.i1] em r */
+            for (k = 0; k < size_p1; k++)
+                r[k] = (a1[a.i1].mask & (1 << (size_p1 - k - 1))) == 0 ? 0 : 1;
+
+            /* guardar a máscara de a2[a.i2] em r */
+            for (k = 0; k < size_p2; k++)
+                r[k + size_p1] = (a2[a.i2].mask & (1 << (size_p2 - k - 1))) == 0 ? 0 : 1;
+
+            /* guardar a máscara de b1[b.i1] em r */
+            for (k = 0; k < size_p3; k++)
+                r[k + size_p1 + size_p2] = (b1[b.i1].mask & (1 << (size_p3 - k - 1))) == 0 ? 0 : 1;
+
+            /* guardar a máscara de b2[b.i2] em r */
+            for (k = 0; k < size_p4; k++)
+                r[k + size_p1 + size_p2 + size_p3] = (b2[b.i2].mask & (1 << (size_p4 - k - 1))) == 0 ? 0 : 1;
+
+            ret = 1;
+            break;
+        }
+    }
+
+    /* destruir a min-heap e a max-heap */
+    destroy(min_heap);
+    destroy(max_heap);
+
+    /* desalocar a1, a2, b1 e b2 da memória */
     free(a1);
     free(a2);
     free(b1);
     free(b2);
 
-    return 0;
+    return ret;
 }
 
 /* ------------------------------------- Programa Principal ------------------------------------- */
