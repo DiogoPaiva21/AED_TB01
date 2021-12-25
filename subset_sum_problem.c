@@ -15,45 +15,36 @@
 #define STUDENT_H_FILE "000000.h"
 #endif
 
-//
-// include files
-//
+/* ----------------------------------- Inclusão de Ficheiros ------------------------------------ */
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "heap.h"
 #include "elapsed_time.h"
 #include STUDENT_H_FILE
 
-//
-// custom data types
-//
-// the STUDENT_H_FILE defines the following constants and data types
-//
-//   #define min_n       24                   --- the smallest n value we will handle
-//   #define max_n       57                   --- the largest n value we will handle
-//   #define n_sums      20                   --- the number of sums for each n value
-//   #define n_problems  (max_n - min_n + 1)  --- the number of n values
-//
-//   typedef unsigned long long integer_t;    ---  64-bit unsigned integer
-//   typedef struct
-//   {
-//     int n;                                 --- number of elements of the set (for a valid problem, min_n <= n <= max_n)
-//     integer_t p[max_n];                    --- the elements of the set, already sorted in increasing order (only the first n elements are used)
-//     integer_t sums[n_sums];                --- several sums (problem: for each sum find the corresponding subset)
-//   }
-//   subset_sum_problem_data_t;               --- weights p[] and sums for a given value of n
-//
-//   subset_sum_problem_data_t all_subset_sum_problems[n_problems]; --- // the problems
-//
-
-//
-// place your code here
-//
-// possible function prototype for a recursive brute-force function:
-// int brute_force(int n,integer_t p[n],int desired_sum,int current_index,integer_t partial_sum)
-// it sould return 1 when the solution is found and 0 otherwise
-// note, however, that you may get a faster function by reducing the number of function arguments (maybe a single pointer to a struct?)
-//
+/**
+ * custom data types
+ *
+ * the STUDENT_H_FILE defines the following constants and data types
+ *
+ *   #define min_n       24                   --- the smallest n value we will handle
+ *   #define max_n       57                   --- the largest n value we will handle
+ *   #define n_sums      20                   --- the number of sums for each n value
+ *   #define n_problems  (max_n - min_n + 1)  --- the number of n values
+ *
+ *   typedef unsigned long long integer_t;    ---  64-bit unsigned integer
+ *   typedef struct
+ *   {
+ *     int n;                                 --- number of elements of the set (for a valid problem, min_n <= n <= max_n)
+ *     integer_t p[max_n];                    --- the elements of the set, already sorted in increasing order (only the first n elements are used)
+ *     integer_t sums[n_sums];                --- several sums (problem: for each sum find the corresponding subset)
+ *   }
+ *   subset_sum_problem_data_t;               --- weights p[] and sums for a given value of n
+ *
+ *   subset_sum_problem_data_t all_subset_sum_problems[n_problems]; --- // the problems
+*/
 
 /* ------------------------------------------- Macros ------------------------------------------- */
 
@@ -89,20 +80,14 @@ typedef struct
 {
     integer_t sum;
     unsigned int mask;
-} hs_data_t;
-
-typedef struct
-{
-    integer_t sum;
-    unsigned int mask;
-} ss_data_t;
+} sm_data_t;
 
 /* ------------------------------------- Funções de Suporte ------------------------------------- */
 
-int hs_data_cmpfunc(const void *d1, const void *d2)
+int sm_data_cmpfunc(const void *d1, const void *d2)
 {
-    hs_data_t *data1 = (hs_data_t *)d1;
-    hs_data_t *data2 = (hs_data_t *)d2;
+    sm_data_t *data1 = (sm_data_t *)d1;
+    sm_data_t *data2 = (sm_data_t *)d2;
     return (data1->sum > data2->sum) - (data1->sum < data2->sum);
 }
 
@@ -242,8 +227,8 @@ int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
     unsigned long long size_b = 1 << size_p2; // 2^size_p2
 
     /* alocação de a e b em memória */
-    hs_data_t *a = (hs_data_t *)malloc(size_a * sizeof(hs_data_t));
-    hs_data_t *b = (hs_data_t *)malloc(size_b * sizeof(hs_data_t));
+    sm_data_t *a = (sm_data_t *)malloc(size_a * sizeof(sm_data_t));
+    sm_data_t *b = (sm_data_t *)malloc(size_b * sizeof(sm_data_t));
 
     /* gerar elementos de a */
     for (unsigned long long i = 0; i < size_a; i++)
@@ -270,8 +255,8 @@ int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
     }
 
     /* ordenação (quicksort) dos elementos de a e b */
-    qsort(a, size_a, sizeof(hs_data_t), hs_data_cmpfunc);
-    qsort(b, size_b, sizeof(hs_data_t), hs_data_cmpfunc);
+    qsort(a, size_a, sizeof(sm_data_t), sm_data_cmpfunc);
+    qsort(b, size_b, sizeof(sm_data_t), sm_data_cmpfunc);
 
     unsigned int ret = 0;            // valor de retorno é zero se não for encontrada nenhuma solução */
     unsigned long long i = 0;        // indexa os elementos de a
@@ -344,10 +329,10 @@ int schroeppel_and_shamir(int n, integer_t p[n], integer_t desired_sum, int r[n]
     unsigned int size_b2 = 1 << size_p4; // 2^size_p4
 
     /* alocação de a e b em memória */
-    ss_data_t *a1 = (ss_data_t *)malloc(size_a1 * sizeof(ss_data_t));
-    ss_data_t *a2 = (ss_data_t *)malloc(size_a2 * sizeof(ss_data_t));
-    ss_data_t *b1 = (ss_data_t *)malloc(size_b1 * sizeof(ss_data_t));
-    ss_data_t *b2 = (ss_data_t *)malloc(size_b2 * sizeof(ss_data_t));
+    sm_data_t *a1 = (sm_data_t *)malloc(size_a1 * sizeof(sm_data_t));
+    sm_data_t *a2 = (sm_data_t *)malloc(size_a2 * sizeof(sm_data_t));
+    sm_data_t *b1 = (sm_data_t *)malloc(size_b1 * sizeof(sm_data_t));
+    sm_data_t *b2 = (sm_data_t *)malloc(size_b2 * sizeof(sm_data_t));
 
     /* gerar elementos de a1 */
     for (unsigned int i = 0; i < size_a1; i++)
@@ -395,27 +380,12 @@ int schroeppel_and_shamir(int n, integer_t p[n], integer_t desired_sum, int r[n]
     }
 
     /* ordenação (quicksort) dos elementos de a1, a2, b1 e b2 */
-    qsort(a1, size_a1, sizeof(ss_data_t), hs_data_cmpfunc);
-    qsort(b1, size_b1, sizeof(ss_data_t), hs_data_cmpfunc);
-    qsort(a2, size_a2, sizeof(ss_data_t), hs_data_cmpfunc);
-    qsort(b2, size_b2, sizeof(ss_data_t), hs_data_cmpfunc);
+    qsort(a1, size_a1, sizeof(sm_data_t), sm_data_cmpfunc);
+    qsort(b1, size_b1, sizeof(sm_data_t), sm_data_cmpfunc);
+    qsort(a2, size_a2, sizeof(sm_data_t), sm_data_cmpfunc);
+    qsort(b2, size_b2, sizeof(sm_data_t), sm_data_cmpfunc);
 
-    printf("a1=[");
-    for (int i = 0; i < size_a1; i++)
-        printf("%llu, ", a1[i].sum);
-    printf("]\n");
-    printf("a2=[");
-    for (int i = 0; i < size_a2; i++)
-        printf("%llu, ", a2[i].sum);
-    printf("]\n");
-    printf("b1=[");
-    for (int i = 0; i < size_b1; i++)
-        printf("%llu, ", b1[i].sum);
-    printf("]\n");
-    printf("b2=[");
-    for (int i = 0; i < size_b2; i++)
-        printf("%llu, ", b2[i].sum);
-    printf("]\n");
+    
 
     /* desalocação de a1, a2, b1 e b2 em memória */
     free(a1);
@@ -425,150 +395,6 @@ int schroeppel_and_shamir(int n, integer_t p[n], integer_t desired_sum, int r[n]
 
     return 0;
 }
-
-/*--------------------------------------------Max-Heap--------------------------------------------*/
-
-#define MAX_SIZE 15
-
-// returns the index of the parent node
-int parent(int i)
-{
-    return (i - 1) / 2;
-}
-
-// return the index of the left child
-int left_child(int i)
-{
-    return 2 * i + 1;
-}
-
-// return the index of the right child
-int right_child(int i)
-{
-    return 2 * i + 2;
-}
-
-void swap(int *x, int *y)
-{
-    int temp = *x;
-    *x = *y;
-    *y = temp;
-}
-
-// insert the item at the appropriate position
-void insert(int a[], int data, int *n)
-{
-    if (*n >= MAX_SIZE)
-    {
-        printf("%s\n", "The heap is full. Cannot insert");
-        return;
-    }
-    // first insert the time at the last position of the array
-    // and move it up
-    a[*n] = data;
-    *n = *n + 1;
-
-    // move up until the heap property satisfies
-    int i = *n - 1;
-    while (i != 0 && a[parent(i)] < a[i])
-    {
-        swap(&a[parent(i)], &a[i]);
-        i = parent(i);
-    }
-}
-
-// moves the item at position i of array a
-// into its appropriate position
-void max_heapify(int a[], int i, int n)
-{
-    // find left child node
-    int left = left_child(i);
-
-    // find right child node
-    int right = right_child(i);
-
-    // find the largest among 3 nodes
-    int largest = i;
-
-    // check if the left node is larger than the current node
-    if (left <= n && a[left] > a[largest])
-    {
-        largest = left;
-    }
-
-    // check if the right node is larger than the current node
-    if (right <= n && a[right] > a[largest])
-    {
-        largest = right;
-    }
-
-    // swap the largest node with the current node
-    // and repeat this process until the current node is larger than
-    // the right and the left node
-    if (largest != i)
-    {
-        int temp = a[i];
-        a[i] = a[largest];
-        a[largest] = temp;
-        max_heapify(a, largest, n);
-    }
-}
-
-// converts an array into a heap
-void build_max_heap(int a[], int n)
-{
-    int i;
-    for (i = n / 2; i >= 0; i--)
-    {
-        max_heapify(a, i, n);
-    }
-}
-
-// returns the  maximum item of the heap
-int get_max(int a[])
-{
-    return a[0];
-}
-
-// deletes the max item and return
-int extract_max(int a[], int *n)
-{
-    int max_item = a[0];
-
-    // replace the first item with the last item
-    a[0] = a[*n - 1];
-    *n = *n - 1;
-
-    // maintain the heap property by heapifying the
-    // first item
-    max_heapify(a, 0, *n);
-    return max_item;
-}
-
-// prints the heap
-void print_heap(int a[], int n)
-{
-    int i;
-    for (i = 0; i < n; i++)
-    {
-        printf("%d\n", a[i]);
-    }
-    printf("\n");
-}
-
-/* int main() {
-    int n = 10;
-    int a[MAX_SIZE];
-    a[1] = 10; a[2] = 12; a[3] = 9; a[4] = 78; a[5] = 33; a[6] = 21; a[7] = 35; a[8] = 29; a[9] = 5; a[10] = 66;
-    build_max_heap(a, n);
-    insert(a, 55, &n);
-    insert(a, 56, &n);
-    insert(a, 57, &n);
-    insert(a, 58, &n);
-    insert(a, 100, &n);
-    print_heap(a, n);
-    return 0;
-} */
 
 /* ------------------------------------- Programa Principal ------------------------------------- */
 
