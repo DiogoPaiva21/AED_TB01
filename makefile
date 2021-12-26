@@ -12,7 +12,7 @@ clean:
 
 
 subset_sum_problem:	subset_sum_problem.c $(STUDENT_H_FILE)
-	cc -Wall -O0 -DSTUDENT_H_FILE=\"$(STUDENT_H_FILE)\" subset_sum_problem.c -o subset_sum_problem
+	cc -Wall -O2 -DSTUDENT_H_FILE=\"$(STUDENT_H_FILE)\" subset_sum_problem.c -o subset_sum_problem
 
 solution_subset_sum_problem:	solution_subset_sum_problem.c $(STUDENT_H_FILE)
-	cc -Wall -O0 -DSTUDENT_H_FILE=\"$(STUDENT_H_FILE)\" solution_subset_sum_problem.c -o solution_subset_sum_problem
+	cc -Wall -O2 -DSTUDENT_H_FILE=\"$(STUDENT_H_FILE)\" solution_subset_sum_problem.c -o solution_subset_sum_problem
