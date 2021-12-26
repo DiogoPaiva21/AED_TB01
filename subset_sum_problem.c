@@ -15,15 +15,6 @@
 #define STUDENT_H_FILE "000000.h"
 #endif
 
-/* ----------------------------------- Inclusão de Ficheiros ------------------------------------ */
-
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include "heap.h"
-#include "elapsed_time.h"
-#include STUDENT_H_FILE
-
 /**
  * custom data types
  *
@@ -49,19 +40,10 @@
 /* ------------------------------------------- Macros ------------------------------------------- */
 
 /*
- * 1 - imprime na consola o valor de retorno, o tempo de execução e o resultado de cada soma
- * 0 - imprime na consola os tempos de execução das somas de um problema n, na mesma linha e separados por '\t'
+ * Determinar problemas com n pertencente ao intervalo [N_MIN N_MAX]
  */
-#ifndef DEBUG
-#define DEBUG 1
-#endif
-
-/*
- * Determinar até ao problema com N_LIMIT valores a somar
- */
-#ifndef N_LIMIT
-#define N_LIMIT 25
-#endif
+#define N_MIN 47
+#define N_MAX 57
 
 /*
  * 0 - brute force não recursiva
@@ -70,11 +52,24 @@
  * 3 - horowitz and sahni
  * 4 - schroeppel and shamir
  */
-#ifndef FUNC
-#define FUNC 0
+#define FUNC 4
+
+/* ----------------------------------- Inclusão de Ficheiros ------------------------------------ */
+
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "elapsed_time.h"
+#include STUDENT_H_FILE
+
+#if FUNC == 4
+#include "heap.h"
 #endif
 
 /* ------------------------------------ Estruturas de Dados ------------------------------------- */
+
+#if FUNC == 3 || FUNC == 4
 
 typedef struct
 {
@@ -82,7 +77,11 @@ typedef struct
     unsigned int mask;
 } sm_data_t;
 
+#endif
+
 /* ------------------------------------- Funções de Suporte ------------------------------------- */
+
+#if FUNC == 3 || FUNC == 4
 
 int sm_data_cmpfunc(const void *d1, const void *d2)
 {
@@ -91,7 +90,11 @@ int sm_data_cmpfunc(const void *d1, const void *d2)
     return (data1->sum > data2->sum) - (data1->sum < data2->sum);
 }
 
+#endif
+
 /* ----------------------------------- Funções dos Algoritmos ----------------------------------- */
+
+#if FUNC == 0
 
 /**
  * @brief Determina a combinação dos valores de p cujo somatório é desired_sum, por um método brute force não recursivo.
@@ -130,6 +133,8 @@ int brute_force(int n, integer_t p[n], integer_t desired_sum, int r[n])
     return 0;
 }
 
+#elif FUNC == 1
+
 /**
  * @brief Determina a combinação dos valores de p cujo somatório é desired_sum, por um método brute force recursivo.
  *
@@ -166,6 +171,8 @@ int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int curr
     }
     return ret;
 }
+
+#elif FUNC == 2
 
 /**
  * @brief Determina a combinação dos valores de p cujo somatório é desired_sum, por um método brute force recursivo inteligente,
@@ -204,6 +211,8 @@ int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current
     }
     return ret;
 }
+
+#elif FUNC == 3
 
 /**
  * @brief Determina a combinação dos valores de p cujo somatório é desired_sum, pelo método de Horowitz e Sahni.
@@ -299,6 +308,8 @@ int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
 
     return ret;
 }
+
+#elif FUNC == 4
 
 /**
  * @brief Determina a combinação dos valores de p cujo somatório é desired_sum, pelo método de Schroeppel e Shamir.
@@ -478,9 +489,11 @@ int schroeppel_and_shamir(int n, integer_t p[n], integer_t desired_sum, int r[n]
     return ret;
 }
 
+#endif
+
 /* ------------------------------------- Programa Principal ------------------------------------- */
 
-int main(void)
+int main(int argc, char *argv[])
 {
     fprintf(stderr, "Program configuration:\n");
     fprintf(stderr, "  min_n ....... %d\n", min_n);
@@ -488,18 +501,25 @@ int main(void)
     fprintf(stderr, "  n_sums ...... %d\n", n_sums);
     fprintf(stderr, "  n_problems .. %d\n", n_problems);
     fprintf(stderr, "  integer_t ... %d bits\n", 8 * (int)sizeof(integer_t));
-    fprintf(stderr, "  function .... %d\n", FUNC);
+    fprintf(stderr, "  .............\n");
+    fprintf(stderr, "  N_MIN ....... %d\n", N_MIN);
+    fprintf(stderr, "  N_MAX ....... %d\n", N_MAX);
+    fprintf(stderr, "  FUNC ........ %d\n", FUNC);
 
-    int ret;       // valor de retorno das funções
-    double t1, t2; // instantes inicial e final
+    int ret;                                                    // valor de retorno das funções
+    double t1, t2;                                              // instantes inicial e final
+    FILE *out = (argc == 3) ? fopen(argv[1], argv[2]) : stdout; // para onde vai o output do programa
 
-#if !DEBUG
-    /* cabeçalho da tabela */
-    printf("n\t");
-    for (int i = 1; i <= 20; i++)
-        printf("t%d\t", i);
-    printf("\n");
-#endif
+    /* ocorreu um erro ao abrir o ficheiro */
+    if (out == NULL)
+    {
+        fprintf(stderr, "Erro ao abrir o ficheiro de escrita!\n");
+        return EXIT_FAILURE;
+    }
+
+    /* impressão do cabeçalho */
+    if (argc == 3 && strcmp(argv[2], "w") == 0)
+        fprintf(out, "%s\t%s\t%s\t%s\n", "n", "retval", "time", "result");
 
     /*
      * para cada problema
@@ -510,18 +530,9 @@ int main(void)
         integer_t *p = all_subset_sum_problems[i].p; // conjunto com os valores a somar
         int r[n];                                    // resultado
 
-        /* ignorar problemas com n superior */
-        if (n > N_LIMIT)
+        /* ignorar problemas com n fora do intervalo [N_MIN N_MAX] */
+        if (n < N_MIN || n > N_MAX)
             continue;
-
-            /*
-             * impressão na consola do n do problema atual
-             */
-#if DEBUG
-        printf("n=%d\n", n);
-#else
-        printf("%d\t", n);
-#endif
 
         /*
          * para cada soma
@@ -551,33 +562,23 @@ int main(void)
             /* instante final */
             t2 = cpu_time();
 
-            /*
-             * impressão na consola
-             */
-#if DEBUG
-            /* valor de retorno */
-            printf("ret=%d\t", ret);
-            /* tempo de execução */
-            printf("%f\t", t2 - t1);
-            /* resultado */
-            if (ret == 1)
-            {
-                for (int i = 0; i < n; i++)
-                    printf("%d", r[i]);
-                printf("\n");
-            }
-            else
-            {
-                printf("Não foi encontrada uma solução!\n");
-            }
-#else
-            /* tempo de execução */
-            (ret == 1) ? printf("%f\t", t2 - t1) : printf("NaN\t");
-#endif
-        }
+            /* impressão do n do problema atual, valor de retorno e tempo de execução */
+            fprintf(out, "%d\t%d\t%f\t", n, ret, (ret) ? t2 - t1 : NAN);
 
-        printf("\n");
+            /* impressão do resultado */
+            if (ret)
+                for (int i = 0; i < n; i++)
+                    fprintf(out, "%d", r[i]);
+            else
+                fprintf(out, "Não foi encontrada uma solução!");
+
+            fprintf(out, "\n");
+        }
     }
 
-    return 0;
+    /* fechar o ficheiro */
+    if (argc == 3)
+        fclose(out);
+
+    return EXIT_SUCCESS;
 }
