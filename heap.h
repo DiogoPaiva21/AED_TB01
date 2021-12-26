@@ -13,8 +13,6 @@
 
 /* ------------------------------------ Estruturas de Dados ------------------------------------- */
 
-typedef unsigned long long integer_t;   // 64-bit unsigned integer
-
 typedef struct
 {
     integer_t sum;

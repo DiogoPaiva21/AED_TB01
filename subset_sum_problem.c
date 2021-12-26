@@ -40,10 +40,10 @@
 /* ------------------------------------------- Macros ------------------------------------------- */
 
 /*
- * Determinar problemas com n pertencente ao intervalo [N_MIN N_MAX]
+ * determinar problemas com n pertencente ao intervalo [N_MIN N_MAX]
  */
-#define N_MIN 47
-#define N_MAX 57
+#define N_MIN 10
+#define N_MAX 50
 
 /*
  * 0 - brute force não recursiva
@@ -53,6 +53,25 @@
  * 4 - schroeppel and shamir
  */
 #define FUNC 4
+
+/*
+ * utilização correta do programa
+ */
+#define USAGE "Sintaxe - %s [ficheiro] [w|a]\n"
+
+/*
+ * configuração do programa
+ */
+#define CONFIG "Configuração do programa\n" \
+               "    N_MIN ....... %d\n"       \
+               "    N_MAX ....... %d\n"       \
+               "    FUNC ........ %d\n"       \
+               "Problemas do ficheiro %s\n"   \
+               "    min_n ....... %d\n"       \
+               "    max_n ....... %d\n"       \
+               "    n_sums ...... %d\n"       \
+               "    n_problems .. %d\n"       \
+               "    integer_t ... %d bits\n"
 
 /* ----------------------------------- Inclusão de Ficheiros ------------------------------------ */
 
@@ -117,7 +136,7 @@ int brute_force(int n, integer_t p[n], integer_t desired_sum, int r[n])
         /* determinar a soma dos valores de p */
         test_sum = 0;
         for (int i = 0; i < n; i++)
-            if ((mask & (1 << (n - i - 1))) != 0)
+            if (mask & (1 << i))
                 test_sum += p[i];
 
         /* foi descoberta a soma */
@@ -125,7 +144,7 @@ int brute_force(int n, integer_t p[n], integer_t desired_sum, int r[n])
         {
             /* guardar a máscara no array r */
             for (int i = 0; i < n; i++)
-                r[i] = ((mask & (1 << (n - i - 1))) == 0) ? 0 : 1;
+                r[i] = (mask & (1 << i)) ? 1 : 0;
             return 1;
         }
     }
@@ -147,7 +166,6 @@ int brute_force(int n, integer_t p[n], integer_t desired_sum, int r[n])
  * @param r                 Array que guarda a solução
  *
  * @return                  1 se foi encontrada uma solução, 0 caso contrário
- *
  */
 int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int current_index, integer_t partial_sum, unsigned long long mask, int r[n])
 {
@@ -156,7 +174,7 @@ int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int curr
     {
         /* guardar a máscara no array r */
         for (int i = 0; i < n; i++)
-            r[i] = ((mask & (1 << (n - i - 1))) == 0) ? 0 : 1;
+            r[i] = (mask & (1 << i)) ? 1 : 0;
         return 1;
     }
 
@@ -167,7 +185,7 @@ int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int curr
         /* p[current_index] não é usado na soma */
         ret |= brute_force_recursive(n, p, desired_sum, current_index + 1, partial_sum, mask, r);
         /* p[current_index] é usado na soma */
-        ret |= brute_force_recursive(n, p, desired_sum, current_index + 1, partial_sum + p[current_index], mask | (1 << (n - current_index - 1)), r);
+        ret |= brute_force_recursive(n, p, desired_sum, current_index + 1, partial_sum + p[current_index], mask | (1 << current_index), r);
     }
     return ret;
 }
@@ -187,7 +205,6 @@ int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int curr
  * @param r                 Array que guarda a solução
  *
  * @return                  1 se foi encontrada uma solução, 0 caso contrário
- *
  */
 int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current_index, integer_t partial_sum, unsigned long long mask, int r[n])
 {
@@ -196,7 +213,7 @@ int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current
     {
         /* guardar a máscara no array r */
         for (int i = 0; i < n; i++)
-            r[i] = ((mask & (1 << (n - i - 1))) == 0) ? 0 : 1;
+            r[i] = (mask & (1 << i)) ? 1 : 0;
         return 1;
     }
 
@@ -207,7 +224,7 @@ int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current
         /* p[current_index] não é usado na soma */
         ret |= brute_force_clever(n, p, desired_sum, current_index + 1, partial_sum, mask, r);
         /* p[current_index] é usado na soma */
-        ret |= brute_force_clever(n, p, desired_sum, current_index + 1, partial_sum + p[current_index], mask | (1 << (n - current_index - 1)), r);
+        ret |= brute_force_clever(n, p, desired_sum, current_index + 1, partial_sum + p[current_index], mask | (1 << current_index), r);
     }
     return ret;
 }
@@ -223,7 +240,6 @@ int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current
  * @param r                 Array que guarda a solução
  *
  * @return                  1 se foi encontrada uma solução, 0 caso contrário
- *
  */
 int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
 {
@@ -247,7 +263,7 @@ int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
         /* soma */
         a[i].sum = 0;
         for (unsigned int j = 0; j < size_p1; j++)
-            if (a[i].mask & (1 << (size_p1 - j - 1)))
+            if (a[i].mask & (1 << j))
                 a[i].sum += p[j];
     }
 
@@ -259,7 +275,7 @@ int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
         /* soma */
         b[i].sum = 0;
         for (unsigned int j = 0; j < size_p2; j++)
-            if (b[i].mask & (1 << (size_p2 - j - 1)))
+            if (b[i].mask & (1 << j))
                 b[i].sum += p[j + size_p1];
     }
 
@@ -291,11 +307,10 @@ int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
         {
             /* guardar a máscara de a[i] em r */
             for (k = 0; k < size_p1; k++)
-                r[k] = (a[i].mask & (1 << (size_p1 - k - 1))) == 0 ? 0 : 1;
-
+                r[k] = (a[i].mask & (1 << k)) ? 1 : 0;
             /* guardar a máscara de b[j] em r */
             for (k = 0; k < size_p2; k++)
-                r[k + size_p1] = (b[j].mask & (1 << (size_p2 - k - 1))) == 0 ? 0 : 1;
+                r[k + size_p1] = (b[j].mask & (1 << k)) ? 1 : 0;
 
             ret = 1;
             break;
@@ -320,7 +335,6 @@ int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
  * @param r                 Array que guarda a solução
  *
  * @return                  1 se foi encontrada uma solução, 0 caso contrário
- *
  */
 int schroeppel_and_shamir(int n, integer_t p[n], integer_t desired_sum, int r[n])
 {
@@ -340,7 +354,7 @@ int schroeppel_and_shamir(int n, integer_t p[n], integer_t desired_sum, int r[n]
     unsigned int size_b1 = 1 << size_p3; // 2^size_p3
     unsigned int size_b2 = 1 << size_p4; // 2^size_p4
 
-    /* alocar a e b na memória */
+    /* alocar a1, a2, b1 e b2 na memória */
     sm_data_t *a1 = (sm_data_t *)malloc(size_a1 * sizeof(sm_data_t));
     sm_data_t *a2 = (sm_data_t *)malloc(size_a2 * sizeof(sm_data_t));
     sm_data_t *b1 = (sm_data_t *)malloc(size_b1 * sizeof(sm_data_t));
@@ -354,7 +368,7 @@ int schroeppel_and_shamir(int n, integer_t p[n], integer_t desired_sum, int r[n]
         /* soma */
         a1[i].sum = 0;
         for (unsigned int j = 0; j < size_p1; j++)
-            if (a1[i].mask & (1 << (size_p1 - j - 1)))
+            if (a1[i].mask & (1 << j))
                 a1[i].sum += p[j];
     }
     /* gerar elementos de a2 */
@@ -365,7 +379,7 @@ int schroeppel_and_shamir(int n, integer_t p[n], integer_t desired_sum, int r[n]
         /* soma */
         a2[i].sum = 0;
         for (unsigned int j = 0; j < size_p2; j++)
-            if (a2[i].mask & (1 << (size_p2 - j - 1)))
+            if (a2[i].mask & (1 << j))
                 a2[i].sum += p[j + size_p1];
     }
     /* gerar elementos de b1 */
@@ -376,7 +390,7 @@ int schroeppel_and_shamir(int n, integer_t p[n], integer_t desired_sum, int r[n]
         /* soma */
         b1[i].sum = 0;
         for (unsigned int j = 0; j < size_p3; j++)
-            if (b1[i].mask & (1 << (size_p3 - j - 1)))
+            if (b1[i].mask & (1 << j))
                 b1[i].sum += p[j + size_p1 + size_p2];
     }
     /* gerar elementos de b2 */
@@ -387,14 +401,16 @@ int schroeppel_and_shamir(int n, integer_t p[n], integer_t desired_sum, int r[n]
         /* soma */
         b2[i].sum = 0;
         for (unsigned int j = 0; j < size_p4; j++)
-            if (b2[i].mask & (1 << (size_p4 - j - 1)))
+            if (b2[i].mask & (1 << j))
                 b2[i].sum += p[j + size_p1 + size_p2 + size_p3];
     }
 
-    /* ordenar (quicksort) os elementos de a1, a2, b1 e b2 */
-    qsort(a1, size_a1, sizeof(sm_data_t), sm_data_cmpfunc);
+    /*
+     * ordenar (quicksort) os elementos de a2 e b2
+     *
+     * a1 e b1 serão ordenados na min-heap e na max-heap respetivamente
+     */
     qsort(a2, size_a2, sizeof(sm_data_t), sm_data_cmpfunc);
-    qsort(b1, size_b1, sizeof(sm_data_t), sm_data_cmpfunc);
     qsort(b2, size_b2, sizeof(sm_data_t), sm_data_cmpfunc);
 
     /* criar uma min-heap (a1 e a2) e uma max-heap (b1 e b2) */
@@ -457,19 +473,16 @@ int schroeppel_and_shamir(int n, integer_t p[n], integer_t desired_sum, int r[n]
         {
             /* guardar a máscara de a1[a.i1] em r */
             for (k = 0; k < size_p1; k++)
-                r[k] = (a1[a.i1].mask & (1 << (size_p1 - k - 1))) == 0 ? 0 : 1;
-
+                r[k] = (a1[a.i1].mask & (1 << k)) ? 1 : 0;
             /* guardar a máscara de a2[a.i2] em r */
             for (k = 0; k < size_p2; k++)
-                r[k + size_p1] = (a2[a.i2].mask & (1 << (size_p2 - k - 1))) == 0 ? 0 : 1;
-
+                r[k + size_p1] = (a2[a.i2].mask & (1 << k)) ? 1 : 0;
             /* guardar a máscara de b1[b.i1] em r */
             for (k = 0; k < size_p3; k++)
-                r[k + size_p1 + size_p2] = (b1[b.i1].mask & (1 << (size_p3 - k - 1))) == 0 ? 0 : 1;
-
+                r[k + size_p1 + size_p2] = (b1[b.i1].mask & (1 << k)) ? 1 : 0;
             /* guardar a máscara de b2[b.i2] em r */
             for (k = 0; k < size_p4; k++)
-                r[k + size_p1 + size_p2 + size_p3] = (b2[b.i2].mask & (1 << (size_p4 - k - 1))) == 0 ? 0 : 1;
+                r[k + size_p1 + size_p2 + size_p3] = (b2[b.i2].mask & (1 << k)) ? 1 : 0;
 
             ret = 1;
             break;
@@ -495,16 +508,12 @@ int schroeppel_and_shamir(int n, integer_t p[n], integer_t desired_sum, int r[n]
 
 int main(int argc, char *argv[])
 {
-    fprintf(stderr, "Program configuration:\n");
-    fprintf(stderr, "  min_n ....... %d\n", min_n);
-    fprintf(stderr, "  max_n ....... %d\n", max_n);
-    fprintf(stderr, "  n_sums ...... %d\n", n_sums);
-    fprintf(stderr, "  n_problems .. %d\n", n_problems);
-    fprintf(stderr, "  integer_t ... %d bits\n", 8 * (int)sizeof(integer_t));
-    fprintf(stderr, "  .............\n");
-    fprintf(stderr, "  N_MIN ....... %d\n", N_MIN);
-    fprintf(stderr, "  N_MAX ....... %d\n", N_MAX);
-    fprintf(stderr, "  FUNC ........ %d\n", FUNC);
+    /* imprimir utilização incorreta do programa */
+    if (argc != 1 && argc != 3)
+    {
+        fprintf(stderr, USAGE, argv[0]);
+        return EXIT_FAILURE;
+    }
 
     int ret;                                                    // valor de retorno das funções
     double t1, t2;                                              // instantes inicial e final
@@ -517,8 +526,13 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    /* impressão do cabeçalho */
-    if (argc == 3 && strcmp(argv[2], "w") == 0)
+    /* imprimir configuração do programa */
+    fprintf(stderr, CONFIG,
+            N_MIN, N_MAX, FUNC,
+            STUDENT_H_FILE, min_n, max_n, n_sums, n_problems, 8 * (int)sizeof(integer_t));
+
+    /* imprimir cabeçalho */
+    if (argc != 3 || (argc == 3 && strcmp(argv[2], "w") == 0))
         fprintf(out, "%s\t%s\t%s\t%s\n", "n", "retval", "time", "result");
 
     /*
@@ -545,7 +559,7 @@ int main(int argc, char *argv[])
             t1 = cpu_time();
 
             /*
-             * execução da função
+             * executar função
              */
 #if FUNC == 0
             ret = brute_force(n, p, desired_sum, r);
@@ -562,10 +576,10 @@ int main(int argc, char *argv[])
             /* instante final */
             t2 = cpu_time();
 
-            /* impressão do n do problema atual, valor de retorno e tempo de execução */
+            /* imprimir n do problema atual, valor de retorno e tempo de execução */
             fprintf(out, "%d\t%d\t%f\t", n, ret, (ret) ? t2 - t1 : NAN);
 
-            /* impressão do resultado */
+            /* imprimir resultado */
             if (ret)
                 for (int i = 0; i < n; i++)
                     fprintf(out, "%d", r[i]);
@@ -576,7 +590,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    /* fechar o ficheiro */
+    /* fechar ficheiro */
     if (argc == 3)
         fclose(out);
 
