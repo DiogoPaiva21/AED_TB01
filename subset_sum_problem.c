@@ -156,11 +156,11 @@ int sm_data_cmpfunc(const void *d1, const void *d2)
  */
 int brute_force(int n, integer_t p[n], integer_t desired_sum, int r[n])
 {
-    __uint128_t mask;   // máscara
-    integer_t test_sum; // soma de teste
+    unsigned __int128 mask; // máscara
+    integer_t test_sum;     // soma de teste
 
     /* para cada combinação */
-    for (mask = 0; mask < (__uint128_t)1 << n; mask++)
+    for (mask = 0; mask < (unsigned __int128)1 << n; mask++)
     {
         /* determinar a soma dos valores de p */
         test_sum = 0;
