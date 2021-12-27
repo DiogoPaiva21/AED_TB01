@@ -43,7 +43,7 @@
  * determinar problemas com n pertencente ao intervalo [N_MIN N_MAX]
  */
 #define N_MIN 10
-#define N_MAX 64
+#define N_MAX 50
 
 /*
  * 0 - brute force não recursiva
@@ -52,7 +52,7 @@
  * 3 - horowitz and sahni
  * 4 - schroeppel and shamir
  */
-#define FUNC 0
+#define FUNC 4
 
 /*
  * utilização correta do programa
@@ -105,13 +105,13 @@ typedef struct
 /**
  * @brief Gera todas as somas e máscaras dos valores de um subconjunto de p, por um método recursivo.
  *
- * @param p         Conjunto com os valores a somar
- * @param offset    Desvio em relação ao primeiro valor de p
- * @param size      Tamanho do subconjunto
- * @param i         Índice atual no subconjunto
- * @param p_sum     Soma atual
- * @param mask      Máscara atual
- * @param r         Array que guarda as somas e as máscaras
+ * @param p             Conjunto com os valores a somar
+ * @param offset        Desvio em relação ao primeiro valor de p
+ * @param size          Tamanho do subconjunto
+ * @param current_index Índice atual no subconjunto
+ * @param partial_sum   Soma atual
+ * @param mask          Máscara atual
+ * @param r             Array que guarda as somas e as máscaras
  */
 void gen_sm_rec(integer_t *p, unsigned int offset, unsigned int size, unsigned int current_index, integer_t partial_sum, unsigned int mask, sm_data_t *r)
 {
