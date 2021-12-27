@@ -43,7 +43,7 @@
  * determinar problemas com n pertencente ao intervalo [N_MIN N_MAX]
  */
 #define N_MIN 10
-#define N_MAX 50
+#define N_MAX 64
 
 /*
  * 0 - brute force não recursiva
@@ -52,7 +52,7 @@
  * 3 - horowitz and sahni
  * 4 - schroeppel and shamir
  */
-#define FUNC 4
+#define FUNC 0
 
 /*
  * utilização correta do programa
