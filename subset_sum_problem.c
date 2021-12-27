@@ -102,6 +102,35 @@ typedef struct
 
 #if FUNC == 3 || FUNC == 4
 
+/**
+ * @brief Gera todas as somas e máscaras dos valores de um subconjunto de p, por um método recursivo.
+ *
+ * @param p         Conjunto com os valores a somar
+ * @param offset    Desvio em relação ao primeiro valor de p
+ * @param size      Tamanho do subconjunto
+ * @param i         Índice atual no subconjunto
+ * @param p_sum     Soma atual
+ * @param mask      Máscara atual
+ * @param r         Array que guarda as somas e as máscaras
+ */
+void gen_sm_rec(integer_t *p, unsigned int offset, unsigned int size, unsigned int current_index, integer_t partial_sum, unsigned int mask, sm_data_t *r)
+{
+    /* Ainda não foram percorridos todos os valores do subconjunto */
+    if (current_index < size)
+    {
+        /* p[current_index] não é usado na soma */
+        gen_sm_rec(p, offset, size, current_index + 1, partial_sum, mask, r);
+        /* p[current_index] é usado na soma */
+        gen_sm_rec(p, offset, size, current_index + 1, partial_sum + p[offset + current_index], mask | (1 << current_index), r);
+    }
+    else
+    {
+        /* guardar a soma e a máscara no array r */
+        r[mask].sum = partial_sum;
+        r[mask].mask = mask;
+    }
+}
+
 int sm_data_cmpfunc(const void *d1, const void *d2)
 {
     sm_data_t *data1 = (sm_data_t *)d1;
@@ -233,7 +262,7 @@ int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current
 
 /**
  * @brief Determina a combinação dos valores de p cujo somatório é desired_sum, pelo método de Horowitz e Sahni.
- * 
+ *
  * @param n                 Tamanho de p
  * @param p                 Conjunto com os valores a somar
  * @param desired_sum       Soma desejada
@@ -255,29 +284,9 @@ int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
     sm_data_t *a = (sm_data_t *)malloc(size_a * sizeof(sm_data_t));
     sm_data_t *b = (sm_data_t *)malloc(size_b * sizeof(sm_data_t));
 
-    /* gerar elementos de a */
-    for (unsigned long long i = 0; i < size_a; i++)
-    {
-        /* máscara */
-        a[i].mask = (unsigned int)i;
-        /* soma */
-        a[i].sum = 0;
-        for (unsigned int j = 0; j < size_p1; j++)
-            if (a[i].mask & (1 << j))
-                a[i].sum += p[j];
-    }
-
-    /* gerar elementos de b */
-    for (unsigned long long i = 0; i < size_b; i++)
-    {
-        /* máscara */
-        b[i].mask = (unsigned int)i;
-        /* soma */
-        b[i].sum = 0;
-        for (unsigned int j = 0; j < size_p2; j++)
-            if (b[i].mask & (1 << j))
-                b[i].sum += p[j + size_p1];
-    }
+    /* gerar elementos de a e b */
+    gen_sm_rec(p, 0, size_p1, 0, 0, 0, a);
+    gen_sm_rec(p, size_p1, size_p2, 0, 0, 0, b);
 
     /* ordenar (quicksort) os elementos de a e de b */
     qsort(a, size_a, sizeof(sm_data_t), sm_data_cmpfunc);
@@ -360,50 +369,11 @@ int schroeppel_and_shamir(int n, integer_t p[n], integer_t desired_sum, int r[n]
     sm_data_t *b1 = (sm_data_t *)malloc(size_b1 * sizeof(sm_data_t));
     sm_data_t *b2 = (sm_data_t *)malloc(size_b2 * sizeof(sm_data_t));
 
-    /* gerar elementos de a1 */
-    for (unsigned int i = 0; i < size_a1; i++)
-    {
-        /* máscara */
-        a1[i].mask = i;
-        /* soma */
-        a1[i].sum = 0;
-        for (unsigned int j = 0; j < size_p1; j++)
-            if (a1[i].mask & (1 << j))
-                a1[i].sum += p[j];
-    }
-    /* gerar elementos de a2 */
-    for (unsigned int i = 0; i < size_a2; i++)
-    {
-        /* máscara */
-        a2[i].mask = i;
-        /* soma */
-        a2[i].sum = 0;
-        for (unsigned int j = 0; j < size_p2; j++)
-            if (a2[i].mask & (1 << j))
-                a2[i].sum += p[j + size_p1];
-    }
-    /* gerar elementos de b1 */
-    for (unsigned int i = 0; i < size_b1; i++)
-    {
-        /* máscara */
-        b1[i].mask = i;
-        /* soma */
-        b1[i].sum = 0;
-        for (unsigned int j = 0; j < size_p3; j++)
-            if (b1[i].mask & (1 << j))
-                b1[i].sum += p[j + size_p1 + size_p2];
-    }
-    /* gerar elementos de b2 */
-    for (unsigned int i = 0; i < size_b2; i++)
-    {
-        /* máscara */
-        b2[i].mask = i;
-        /* soma */
-        b2[i].sum = 0;
-        for (unsigned int j = 0; j < size_p4; j++)
-            if (b2[i].mask & (1 << j))
-                b2[i].sum += p[j + size_p1 + size_p2 + size_p3];
-    }
+    /* gerar elementos de a1, a2, b1 e b2 */
+    gen_sm_rec(p, 0, size_p1, 0, 0, 0, a1);
+    gen_sm_rec(p, size_p1, size_p2, 0, 0, 0, a2);
+    gen_sm_rec(p, size_p12, size_p3, 0, 0, 0, b1);
+    gen_sm_rec(p, size_p12 + size_p3, size_p4, 0, 0, 0, b2);
 
     /*
      * ordenar (quicksort) os elementos de a2 e b2
@@ -435,8 +405,8 @@ int schroeppel_and_shamir(int n, integer_t p[n], integer_t desired_sum, int r[n]
     }
 
     unsigned int ret = 0; // valor de retorno é zero se não for encontrada nenhuma solução
-    heap_data_t a;        // elemento removido da min-heap
-    heap_data_t b;        // elemento removido da max-heap
+    heap_data_t a;        // elemento da min-heap
+    heap_data_t b;        // elemento da max-heap
     integer_t test_sum;   // soma de teste
     unsigned int k;       // posição do bit da máscara
 
@@ -479,10 +449,10 @@ int schroeppel_and_shamir(int n, integer_t p[n], integer_t desired_sum, int r[n]
                 r[k + size_p1] = (a2[a.i2].mask & (1 << k)) ? 1 : 0;
             /* guardar a máscara de b1[b.i1] em r */
             for (k = 0; k < size_p3; k++)
-                r[k + size_p1 + size_p2] = (b1[b.i1].mask & (1 << k)) ? 1 : 0;
+                r[k + size_p12] = (b1[b.i1].mask & (1 << k)) ? 1 : 0;
             /* guardar a máscara de b2[b.i2] em r */
             for (k = 0; k < size_p4; k++)
-                r[k + size_p1 + size_p2 + size_p3] = (b2[b.i2].mask & (1 << k)) ? 1 : 0;
+                r[k + size_p12 + size_p3] = (b2[b.i2].mask & (1 << k)) ? 1 : 0;
 
             ret = 1;
             break;
