@@ -43,7 +43,7 @@
  * determinar problemas com n pertencente ao intervalo [N_MIN N_MAX]
  */
 #define N_MIN 10
-#define N_MAX 50
+#define N_MAX 64
 
 /*
  * 0 - brute force não recursiva
@@ -52,7 +52,7 @@
  * 3 - horowitz and sahni
  * 4 - schroeppel and shamir
  */
-#define FUNC 4
+#define FUNC 0
 
 /*
  * utilização correta do programa
@@ -127,11 +127,11 @@ int sm_data_cmpfunc(const void *d1, const void *d2)
  */
 int brute_force(int n, integer_t p[n], integer_t desired_sum, int r[n])
 {
-    unsigned long long mask; // máscara
-    integer_t test_sum;      // soma de teste
+    __uint128_t mask;   // máscara
+    integer_t test_sum; // soma de teste
 
     /* para cada combinação */
-    for (mask = 0; mask < (1 << n); mask++)
+    for (mask = 0; mask < (__uint128_t)1 << n; mask++)
     {
         /* determinar a soma dos valores de p */
         test_sum = 0;
@@ -233,7 +233,7 @@ int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current
 
 /**
  * @brief Determina a combinação dos valores de p cujo somatório é desired_sum, pelo método de Horowitz e Sahni.
- *
+ * 
  * @param n                 Tamanho de p
  * @param p                 Conjunto com os valores a somar
  * @param desired_sum       Soma desejada
@@ -248,8 +248,8 @@ int horowitz_and_sahni(int n, integer_t p[n], integer_t desired_sum, int r[n])
     unsigned int size_p2 = n - size_p1;
 
     /* tamanho de a e b */
-    unsigned long long size_a = 1 << size_p1; // 2^size_p1
-    unsigned long long size_b = 1 << size_p2; // 2^size_p2
+    unsigned long long size_a = 1ull << size_p1; // 2^size_p1
+    unsigned long long size_b = 1ull << size_p2; // 2^size_p2
 
     /* alocar a e b na memória */
     sm_data_t *a = (sm_data_t *)malloc(size_a * sizeof(sm_data_t));
