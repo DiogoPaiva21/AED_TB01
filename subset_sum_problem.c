@@ -12,7 +12,7 @@
 #error "This code must must be compiled in c99 mode or later (-std=c99)" // to handle the unsigned long long data type
 #endif
 #ifndef STUDENT_H_FILE
-#define STUDENT_H_FILE "000000.h"
+#define STUDENT_H_FILE "103183_extra.h"
 #endif
 
 /**
@@ -43,7 +43,7 @@
  * determinar problemas com n pertencente ao intervalo [N_MIN N_MAX]
  */
 #define N_MIN 10
-#define N_MAX 64
+#define N_MAX 32
 
 /*
  * 0 - brute force não recursiva
@@ -52,7 +52,7 @@
  * 3 - horowitz and sahni
  * 4 - schroeppel and shamir
  */
-#define FUNC 0
+#define FUNC 2
 
 /*
  * utilização correta do programa
@@ -82,7 +82,7 @@
 #include "elapsed_time.h"
 #include STUDENT_H_FILE
 
-#if FUNC == 4
+#if FUNC == 0
 #include "heap.h"
 #endif
 
