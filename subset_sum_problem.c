@@ -12,7 +12,7 @@
 #error "This code must must be compiled in c99 mode or later (-std=c99)" // to handle the unsigned long long data type
 #endif
 #ifndef STUDENT_H_FILE
-#define STUDENT_H_FILE "103183_extra.h"
+#define STUDENT_H_FILE "000000_extra.h"
 #endif
 
 /**
@@ -82,7 +82,7 @@
 #include "elapsed_time.h"
 #include STUDENT_H_FILE
 
-#if FUNC == 0
+#if FUNC == 4
 #include "heap.h"
 #endif
 
