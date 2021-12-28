@@ -226,7 +226,7 @@ int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int curr
 
 /**
  * @brief Determina a combinação dos valores de p cujo somatório é desired_sum, por um método brute force recursivo inteligente,
- * que evita recursões extra quando a soma parcial já é superior à soma desejada.
+ * que evita recursões extra quando a soma parcial já seria superior à soma desejada.
  *
  * @param n                 Tamanho de p
  * @param p                 Conjunto com os valores a somar
