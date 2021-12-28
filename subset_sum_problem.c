@@ -207,16 +207,19 @@ int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int curr
         return 1;
     }
 
-    /* valor de retorno é zero se ainda não tiver sido encontrada uma solução */
-    int ret = 0;
-    if (current_index < n)
-    {
+    /* o índice atual é inválido */
+    if (current_index == n)
+        return 0;
+
         /* p[current_index] não é usado na soma */
-        ret |= brute_force_recursive(n, p, desired_sum, current_index + 1, partial_sum, mask, r);
+    if (brute_force_recursive(n, p, desired_sum, current_index + 1, partial_sum, mask, r))
+        return 1;
+
         /* p[current_index] é usado na soma */
-        ret |= brute_force_recursive(n, p, desired_sum, current_index + 1, partial_sum + p[current_index], mask | (1 << current_index), r);
-    }
-    return ret;
+    if (brute_force_recursive(n, p, desired_sum, current_index + 1, partial_sum + p[current_index], mask | (1 << current_index), r))
+        return 1;
+
+    return 0;
 }
 
 #elif FUNC == 2
@@ -246,16 +249,19 @@ int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current
         return 1;
     }
 
-    /* valor de retorno é zero se ainda não tiver sido encontrada uma solução */
-    int ret = 0;
-    if (current_index < n && partial_sum < desired_sum)
-    {
+    /* o índice atual é inválido */
+    if (current_index == n)
+        return 0;
+
         /* p[current_index] não é usado na soma */
-        ret |= brute_force_clever(n, p, desired_sum, current_index + 1, partial_sum, mask, r);
+    if (brute_force_clever(n, p, desired_sum, current_index + 1, partial_sum, mask, r))
+        return 1;
+        
         /* p[current_index] é usado na soma */
-        ret |= brute_force_clever(n, p, desired_sum, current_index + 1, partial_sum + p[current_index], mask | (1 << current_index), r);
-    }
-    return ret;
+    if (partial_sum + p[current_index] <= desired_sum && brute_force_clever(n, p, desired_sum, current_index + 1, partial_sum + p[current_index], mask | (1 << current_index), r))
+        return 1;
+
+    return 0;
 }
 
 #elif FUNC == 3
