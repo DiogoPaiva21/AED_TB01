@@ -12,7 +12,7 @@
 #error "This code must must be compiled in c99 mode or later (-std=c99)" // to handle the unsigned long long data type
 #endif
 #ifndef STUDENT_H_FILE
-#define STUDENT_H_FILE "103183_extra.h"
+#define STUDENT_H_FILE "000000_extra.h"
 #endif
 
 /**
@@ -82,7 +82,7 @@
 #include "elapsed_time.h"
 #include STUDENT_H_FILE
 
-#if FUNC == 0
+#if FUNC == 4
 #include "heap.h"
 #endif
 
@@ -156,11 +156,11 @@ int sm_data_cmpfunc(const void *d1, const void *d2)
  */
 int brute_force(int n, integer_t p[n], integer_t desired_sum, int r[n])
 {
-    __uint128_t mask;   // máscara
-    integer_t test_sum; // soma de teste
+    unsigned __int128 mask; // máscara
+    integer_t test_sum;     // soma de teste
 
     /* para cada combinação */
-    for (mask = 0; mask < (__uint128_t)1 << n; mask++)
+    for (mask = 0; mask < (unsigned __int128)1 << n; mask++)
     {
         /* determinar a soma dos valores de p */
         test_sum = 0;
@@ -207,23 +207,26 @@ int brute_force_recursive(int n, integer_t p[n], integer_t desired_sum, int curr
         return 1;
     }
 
-    /* valor de retorno é zero se ainda não tiver sido encontrada uma solução */
-    int ret = 0;
-    if (current_index < n)
-    {
+    /* o índice atual é inválido */
+    if (current_index == n)
+        return 0;
+
         /* p[current_index] não é usado na soma */
-        ret |= brute_force_recursive(n, p, desired_sum, current_index + 1, partial_sum, mask, r);
+    if (brute_force_recursive(n, p, desired_sum, current_index + 1, partial_sum, mask, r))
+        return 1;
+
         /* p[current_index] é usado na soma */
-        ret |= brute_force_recursive(n, p, desired_sum, current_index + 1, partial_sum + p[current_index], mask | (1 << current_index), r);
-    }
-    return ret;
+    if (brute_force_recursive(n, p, desired_sum, current_index + 1, partial_sum + p[current_index], mask | (1 << current_index), r))
+        return 1;
+
+    return 0;
 }
 
 #elif FUNC == 2
 
 /**
  * @brief Determina a combinação dos valores de p cujo somatório é desired_sum, por um método brute force recursivo inteligente,
- * que evita recursões extra quando a soma parcial já é superior à soma desejada.
+ * que evita recursões extra quando a soma parcial já seria superior à soma desejada.
  *
  * @param n                 Tamanho de p
  * @param p                 Conjunto com os valores a somar
@@ -246,16 +249,19 @@ int brute_force_clever(int n, integer_t p[n], integer_t desired_sum, int current
         return 1;
     }
 
-    /* valor de retorno é zero se ainda não tiver sido encontrada uma solução */
-    int ret = 0;
-    if (current_index < n && partial_sum < desired_sum)
-    {
+    /* o índice atual é inválido */
+    if (current_index == n)
+        return 0;
+
         /* p[current_index] não é usado na soma */
-        ret |= brute_force_clever(n, p, desired_sum, current_index + 1, partial_sum, mask, r);
+    if (brute_force_clever(n, p, desired_sum, current_index + 1, partial_sum, mask, r))
+        return 1;
+        
         /* p[current_index] é usado na soma */
-        ret |= brute_force_clever(n, p, desired_sum, current_index + 1, partial_sum + p[current_index], mask | (1 << current_index), r);
-    }
-    return ret;
+    if (partial_sum + p[current_index] <= desired_sum && brute_force_clever(n, p, desired_sum, current_index + 1, partial_sum + p[current_index], mask | (1 << current_index), r))
+        return 1;
+
+    return 0;
 }
 
 #elif FUNC == 3
