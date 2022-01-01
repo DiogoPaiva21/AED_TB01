@@ -1,5 +1,5 @@
 //
-// AED, November 2021
+// AED, December 2021
 //
 // Solution of the first practical assignement (subset sum problem)
 //
@@ -480,7 +480,7 @@ int schroeppel_and_shamir(int n, integer_t p[n], integer_t desired_sum, int r[n]
 
 #endif
 
-/* ------------------------------------- Programa Principal ------------------------------------- */
+/* -------------------------------- Fluxo de Execução Principal --------------------------------- */
 
 int main(int argc, char *argv[])
 {
